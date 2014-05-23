@@ -14,7 +14,7 @@ namespace CG_Exp_2D
         /// </summary>
         private Point cur;
         private T decision_Pk;//当前的决策参数Pk
-        private struct tagParam { };//决定曲线形状的参数列表
+        public struct tagParam { };//决定曲线形状的参数列表
         private tagParam param;
 
         public abstract Point[] pointBySymmetry();//根据对称性求点
@@ -37,7 +37,7 @@ namespace CG_Exp_2D
     /// <summary>
     /// 直线类
     /// </summary>
-    class Line:Curve<int>
+    class CG_Line:Curve<int>
     {
         /*    k=-1   k=1
          *      \  |  /   
@@ -55,9 +55,10 @@ namespace CG_Exp_2D
         /// 决策参数
         /// </summary>
         private int decision_Pk;
-        private struct tagParam
+        public struct tagParam
         {
             public Point start, end;//起始点
+            public Color color;//颜色
         }
         /// <summary>
         /// 直线的名字
@@ -74,10 +75,19 @@ namespace CG_Exp_2D
             }
         }
         private string name;
+
+        public tagParam Param
+        {
+            get
+            {
+                return originalParam;
+            }
+        }
         /// <summary>
         /// 起点和终点的坐标
         /// </summary>
         private tagParam param;
+        private tagParam originalParam;
         /// <summary>
         /// const_1=2delta y;  const_2=2delta y-2delta x
         /// </summary>
@@ -92,11 +102,12 @@ namespace CG_Exp_2D
         /// </summary>
         /// <param name="pStart">起点坐标</param>
         /// <param name="pEnd">终点坐标</param>
-        public Line(Point pStart,Point pEnd)
+        public CG_Line(Point pStart,Point pEnd, Color c)
         {
             param = new tagParam();
             param.start = pStart;
             param.end = pEnd;
+            param.color = c;
             //方便起见，默认起点在终点的下方
             if (param.start.X > param.end.X)
             {
@@ -106,7 +117,7 @@ namespace CG_Exp_2D
             {
                 swap(ref param.start, ref param.end);
             }
-            
+            originalParam = param;
             this.initialize();
         }
 
@@ -236,7 +247,7 @@ namespace CG_Exp_2D
     /// <summary>
     /// 圆类
     /// </summary>
-    class Circle : Curve<double>
+    class CG_Circle : Curve<double>
     {
         /// <summary>
         /// 当前点的坐标
@@ -261,10 +272,19 @@ namespace CG_Exp_2D
         /// 决策参数
         /// </summary>
         private double decision_Pk;
-        private struct tagParam
+        public struct tagParam
         {
             public Point center;
             public int radius;
+            public Color color;
+        }
+
+        public tagParam Param
+        {
+            get
+            {
+                return param;
+            }
         }
         /// <summary>
         /// 参数列表，包含圆心坐标和半径
@@ -276,11 +296,12 @@ namespace CG_Exp_2D
         /// </summary>
         /// <param name="pCenter">圆心坐标</param>
         /// <param name="R">半径</param>
-        public Circle(Point pCenter, int R)
+        public CG_Circle(Point pCenter, int R, Color c)
         {
             param = new tagParam();
             param.center = pCenter;
             param.radius = R;
+            param.color = c;
             cur.X = 0;
             cur.Y = R;
             decision_Pk = 5.0 / 4.0 - R;

@@ -14,6 +14,7 @@ namespace CG_Exp_2D
         private bool polygonStart, polygonEnd;//多边形绘画开关
         private bool lineStart, lineEnd;//直线绘画开关
         private bool circleStart;//圆绘画开关
+        private bool rectangleStart, rectangleEnd;//矩形绘画开关
 
         
         private Canvas curCanvas;
@@ -42,6 +43,8 @@ namespace CG_Exp_2D
             lineStart = false;
             lineEnd = false;
             circleStart = false;
+            rectangleStart = false;
+            rectangleEnd = false;
         }
 
         /// <summary>
@@ -81,13 +84,14 @@ namespace CG_Exp_2D
                     curCanvas.drawLine_Bresenham(prepClick, curClick, curColor, name);
                     listBox_graphics.Items.Add(name);
                     switchOff();
+                    panel_workspace.Refresh();
                 }
                 else
                 {
                     prepClick = curClick;
                     lineEnd = true;
                 }
-                panel_workspace.Refresh();
+                
                 return;
             }//end line
 
@@ -108,6 +112,25 @@ namespace CG_Exp_2D
                     MessageBox.Show("请输入正确的半径数值（一个正整数）！");
                 }
             }//end circle
+
+            if (rectangleStart == true)
+            {
+                if (rectangleEnd==true)
+                {
+                     name = "矩形" + (curCanvas.CountRectangle + 1).ToString();
+                     curCanvas.drawRectangle(prepClick,curClick,curColor,name);
+                     listBox_graphics.Items.Add(name);
+                     switchOff();
+                     panel_workspace.Refresh();
+                }
+                else
+                {
+                    prepClick = curClick;
+                    rectangleEnd = true;
+                }
+                return;
+               
+            }//end rectangle
         }
 
         private void mainFrm_Load(object sender, EventArgs e)
@@ -122,7 +145,7 @@ namespace CG_Exp_2D
             curClick.X = curClick.X - zero.X;
             curClick.Y = zero.Y - curClick.Y;
             textBox_curCoords.Text = curClick.X.ToString() + ", " + curClick.Y.ToString();
-            if (circleStart==true || lineStart==true || polygonStart==true) checkIfDraw();
+            if (circleStart == true || lineStart == true || polygonStart == true || rectangleStart == true) checkIfDraw();
         }
 
         //多边形绘制开始
@@ -211,12 +234,34 @@ namespace CG_Exp_2D
             circleStart = true;
         }
 
+        //设置输入的坐标为当前坐标
         private void button_setCoor_Click(object sender, EventArgs e)
         {
             curClick.X = int.Parse(textBox_X.Text);
             curClick.Y = int.Parse(textBox_Y.Text);
             textBox_curCoords.Text = curClick.X.ToString() + ", " + curClick.Y.ToString();
             checkIfDraw();
+        }
+
+        //开始绘制矩形
+        private void button_drawRectangle_Click(object sender, EventArgs e)
+        {
+            switchOff();
+            rectangleStart = true;
+        }
+
+        //开始裁剪线段
+        private void button_clipLines_Click(object sender, EventArgs e)
+        {
+            curCanvas.clipLines_usingCurRectangle();
+        }
+
+        //图元列表中的选项改变时
+        private void listBox_graphics_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string name = listBox_graphics.SelectedItem.ToString();
+            curCanvas.changeCurPrimitive(name);
+            panel_workspace.Refresh();
         }
     }
 }

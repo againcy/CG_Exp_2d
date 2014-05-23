@@ -10,7 +10,7 @@ namespace CG_Exp_2D
     /// <summary>
     /// （顶点表示的）多边形类
     /// </summary>
-    class Polygon
+    class CG_Polygon
     {
         /// <summary>
         /// 多边形的顶点链表
@@ -35,7 +35,7 @@ namespace CG_Exp_2D
         private string name;
         
 
-        public Polygon(Point first)
+        public CG_Polygon(Point first)
         {
             vertex = new LinkedList<Point>();
             vertex.AddFirst(first);
@@ -399,6 +399,187 @@ namespace CG_Exp_2D
                 
                 throw;
             }
+        }
+    }
+
+    /// <summary>
+    /// 矩形类
+    /// </summary>
+    class CG_Rectangle
+    {
+        /// <summary>
+        /// 矩形的名称
+        /// </summary>
+        public string Name
+        {
+            set
+            {
+                name = value;
+            }
+            get
+            {
+                return name;
+            }
+        }
+        private string name;
+
+        /// <summary>
+        /// 矩形左上角顶点的坐标
+        /// </summary>
+        public Point Location
+        {
+            set
+            {
+                location = value;
+                top = location.Y;
+                bottom = top - height;
+                left = location.X;
+                right = left + width;
+            }
+            get
+            {
+                return location;
+            }
+        }
+        private Point location;
+
+        /// <summary>
+        /// 矩形顶边的y坐标
+        /// </summary>
+        public int Top
+        {
+            set
+            {
+                top = value;
+                bottom = top - height;
+                location.Y = top;
+            }
+            get
+            {
+                return top;
+            }
+        }
+        private int top;
+
+        /// <summary>
+        /// 矩形底边的y坐标
+        /// </summary>
+        public int Bottom
+        {
+            set
+            {
+                bottom = value;
+                top = bottom + height;
+                location.Y = top;
+            }
+            get
+            {
+                return bottom;
+            }
+        }
+        private int bottom;
+
+        /// <summary>
+        /// 矩形左侧边的x坐标
+        /// </summary>
+        public int Left
+        {
+            set
+            {
+                left = value;
+                location.X = left;
+                right = left + width;
+            }
+            get
+            {
+                return left;
+            }
+        }
+        private int left;
+
+        /// <summary>
+        /// 矩形右侧边的x坐标
+        /// </summary>
+        public int Right
+        {
+            set
+            {
+                right = value;
+                left = right - width;
+                location.X = left;
+            }
+            get
+            {
+                return right;
+            }
+        }
+        private int right;
+
+        /// <summary>
+        /// 矩形的高
+        /// </summary>
+        public int Height
+        {
+            set
+            {
+                height = value;
+                bottom = location.Y - height;
+            }
+            get
+            {
+                return height;
+            }
+        }
+        private int height;
+
+        /// <summary>
+        /// 矩形的宽
+        /// </summary>
+        public int Width
+        {
+            set
+            {
+                width = value;
+                right = left + width;
+            }
+            get
+            {
+                return width;
+            }
+        }
+        private int width;
+
+        /// <summary>
+        /// 构造矩形
+        /// </summary>
+        /// <param name="loc">左上角坐标</param>
+        /// <param name="h">矩形的高</param>
+        /// <param name="w">矩形的宽</param>
+        public CG_Rectangle(Point loc, int h, int w)
+        {
+            location = loc;
+            height = h;
+            width = w;
+            top = loc.Y;
+            bottom = loc.Y - h;
+            left = loc.X;
+            right = loc.X + w;
+        }
+
+        /// <summary>
+        /// 构造矩形
+        /// </summary>
+        /// <param name="loc">左上角坐标</param>
+        /// <param name="diagonal">右下角坐标</param>
+        public CG_Rectangle(Point loc, Point diagonal)
+        {
+            location = loc;
+            height = Math.Abs(loc.Y - diagonal.Y);
+            width = Math.Abs(loc.X - diagonal.X);
+            top = loc.Y;
+            bottom = loc.Y - height;
+            left = loc.X;
+            right = loc.X + width;
         }
     }
 }

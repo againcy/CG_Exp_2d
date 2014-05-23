@@ -44,6 +44,8 @@
             this.listBox_graphics = new System.Windows.Forms.ListBox();
             this.label2 = new System.Windows.Forms.Label();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.button_drawRectangle = new System.Windows.Forms.Button();
+            this.button_clipLines = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel_workspace
@@ -171,6 +173,7 @@
             this.listBox_graphics.Name = "listBox_graphics";
             this.listBox_graphics.Size = new System.Drawing.Size(120, 232);
             this.listBox_graphics.TabIndex = 13;
+            this.listBox_graphics.SelectedIndexChanged += new System.EventHandler(this.listBox_graphics_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -181,11 +184,33 @@
             this.label2.TabIndex = 15;
             this.label2.Text = "已绘制图元";
             // 
+            // button_drawRectangle
+            // 
+            this.button_drawRectangle.Location = new System.Drawing.Point(618, 180);
+            this.button_drawRectangle.Name = "button_drawRectangle";
+            this.button_drawRectangle.Size = new System.Drawing.Size(100, 30);
+            this.button_drawRectangle.TabIndex = 16;
+            this.button_drawRectangle.Text = "绘制矩形";
+            this.button_drawRectangle.UseVisualStyleBackColor = true;
+            this.button_drawRectangle.Click += new System.EventHandler(this.button_drawRectangle_Click);
+            // 
+            // button_clipLines
+            // 
+            this.button_clipLines.Location = new System.Drawing.Point(618, 260);
+            this.button_clipLines.Name = "button_clipLines";
+            this.button_clipLines.Size = new System.Drawing.Size(100, 30);
+            this.button_clipLines.TabIndex = 17;
+            this.button_clipLines.Text = "裁剪直线";
+            this.button_clipLines.UseVisualStyleBackColor = true;
+            this.button_clipLines.Click += new System.EventHandler(this.button_clipLines_Click);
+            // 
             // mainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(966, 615);
+            this.Controls.Add(this.button_clipLines);
+            this.Controls.Add(this.button_drawRectangle);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.listBox_graphics);
             this.Controls.Add(this.button_setCoor);
@@ -202,7 +227,7 @@
             this.Controls.Add(this.textBox_curCoords);
             this.Controls.Add(this.panel_workspace);
             this.Name = "mainFrm";
-            this.Text = "Form1";
+            this.Text = "CG_Exp_2d";
             this.Load += new System.EventHandler(this.mainFrm_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -227,6 +252,8 @@
         private System.Windows.Forms.ListBox listBox_graphics;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ColorDialog colorDialog1;
+        private System.Windows.Forms.Button button_drawRectangle;
+        private System.Windows.Forms.Button button_clipLines;
     }
 }
 

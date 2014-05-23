@@ -63,9 +63,11 @@ namespace CG_Exp_2D
     {
         private Point zero; //坐标系的(0,0)在panel中的位置
 
-        private Line curLine;
-        private Circle curCircle;
-        public Polygon CurPolygon
+        private CG_Line curLine;
+
+        private CG_Circle curCircle;
+
+        public CG_Polygon CurPolygon
         {
             set
             {
@@ -76,8 +78,24 @@ namespace CG_Exp_2D
                 return curPolygon;
             }
         }
-        private Polygon curPolygon;
+        private CG_Polygon curPolygon;
 
+        public CG_Rectangle CurRectangle
+        {
+            set
+            {
+                curRectangle = value;
+            }
+            get
+            {
+                return curRectangle;
+            }
+        }
+        private CG_Rectangle curRectangle;
+
+        /// <summary>
+        /// 当前图层中直线的数量
+        /// </summary>
         public int CountLine
         {
             get
@@ -85,6 +103,10 @@ namespace CG_Exp_2D
                 return listLine.Count;
             }
         }
+
+        /// <summary>
+        /// 当前图层中圆的数量
+        /// </summary>
         public int CountCircle
         {
             get
@@ -92,6 +114,10 @@ namespace CG_Exp_2D
                 return listCircle.Count;
             }
         }
+
+        /// <summary>
+        /// 当前图层中多边形的数量
+        /// </summary>
         public int CountPolygon
         {
             get
@@ -99,9 +125,22 @@ namespace CG_Exp_2D
                 return listPolygon.Count;
             }
         }
-        private LinkedList<Line> listLine;//直线列表
-        private LinkedList<Circle> listCircle;//圆列表
-        private LinkedList<Polygon> listPolygon;//多边形列表
+
+        /// <summary>
+        /// 当前图层中矩形的数量
+        /// </summary>
+        public int CountRectangle
+        {
+            get
+            {
+                return listRectangle.Count;
+            }
+        }
+
+        private LinkedList<CG_Line> listLine;//直线列表
+        private LinkedList<CG_Circle> listCircle;//圆列表
+        private LinkedList<CG_Polygon> listPolygon;//多边形列表
+        private LinkedList<CG_Rectangle> listRectangle;//矩形列表
         private Timer timer;//秒表
 
         /// <summary>
@@ -200,9 +239,10 @@ namespace CG_Exp_2D
             hidden = false;
             name = str;
             clearCanvas();
-            listLine=new LinkedList<Line>();
-            listPolygon=new LinkedList<Polygon>();
-            listCircle=new LinkedList<Circle>();
+            listLine = new LinkedList<CG_Line>();
+            listPolygon = new LinkedList<CG_Polygon>();
+            listCircle = new LinkedList<CG_Circle>();
+            listRectangle = new LinkedList<CG_Rectangle>();
         }
 
         /// <summary>
@@ -253,6 +293,24 @@ namespace CG_Exp_2D
         }
 
         /// <summary>
+        /// 根据名称改变当前curXXX所指向的图元
+        /// </summary>
+        /// <param name="name"></param>
+        public void changeCurPrimitive(string name)
+        {
+            //todo
+            LinkedListNode<CG_Rectangle> curRec = listRectangle.First;
+            while (curRec != null)
+            {
+                if (curRec.Value.Name == name)
+                {
+                    curRectangle = curRec.Value;
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
         /// 对当前输入的直线，使用Bresenham算法画出图像
         /// </summary>
         /// <param name="pStart">直线起点</param>
@@ -260,7 +318,7 @@ namespace CG_Exp_2D
         /// <param name="color">直线颜色</param>
         public void drawLine_Bresenham(Point pStart, Point pEnd, Color color)
         {
-            Line newLine = new Line(pStart, pEnd);
+            CG_Line newLine = new CG_Line(pStart, pEnd, color);
             foreach (Point cur in newLine.curPoint())
             {
                 drawOnCanvas(cur, color);
@@ -283,7 +341,7 @@ namespace CG_Exp_2D
         /// <param name="name">直线的名称</param>
         public void drawLine_Bresenham(Point pStart, Point pEnd, Color color, string name)
         {
-            Line newLine = new Line(pStart, pEnd);
+            CG_Line newLine = new CG_Line(pStart, pEnd, color);
             newLine.Name = name;
             listLine.AddLast(newLine);
             curLine = newLine;
@@ -298,7 +356,7 @@ namespace CG_Exp_2D
         /// <param name="color">颜色</param>
         public void drawCircle_Bresenham(Point center, int R, Color color)
         {
-            Circle newCircle = new Circle(center, R);
+            CG_Circle newCircle = new CG_Circle(center, R, color);
             foreach (Point cur in newCircle.curPoint())
             {
                 drawOnCanvas(cur, color);
@@ -321,7 +379,7 @@ namespace CG_Exp_2D
         /// <param name="name">名称</param>
         public void drawCircle_Bresenham(Point center, int R, Color color, string name)
         {
-            Circle newCircle = new Circle(center, R);
+            CG_Circle newCircle = new CG_Circle(center, R, color);
             newCircle.Name = name;
             listCircle.AddLast(newCircle);
             curCircle = newCircle;
@@ -335,12 +393,12 @@ namespace CG_Exp_2D
         /// <param name="color">颜色</param>
         public void createPolygon(Point[] vertice, Color color)
         {
-            Polygon newPolygon= null;
+            CG_Polygon newPolygon= null;
             int count = 0;
             foreach (Point v in vertice)
             {
                 count++;
-                if (count == 1) newPolygon = new Polygon(v);
+                if (count == 1) newPolygon = new CG_Polygon(v);
                 else
                 {
                     newPolygon.addVertex(v);
@@ -373,7 +431,7 @@ namespace CG_Exp_2D
         /// <param name="color">当前边的颜色</param>
         public void drawPolygon(Point vertex, Color color)
         {
-            if (curPolygon == null) curPolygon = new Polygon(vertex);
+            if (curPolygon == null) curPolygon = new CG_Polygon(vertex);
             else
             {
                 if (curPolygon.nVertex > 0)
@@ -425,6 +483,39 @@ namespace CG_Exp_2D
                 MessageBox.Show("顶点数不足3个，无法构成多边形！");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 绘制矩形
+        /// </summary>
+        /// <param name="loc">左上角坐标</param>
+        /// <param name="diagonal">右下角坐标</param>
+        /// <param name="color">颜色</param>
+        public void drawRectangle(Point loc, Point diagonal, Color color)
+        {
+            Point right_top = new Point(diagonal.X, loc.Y);//右上顶点
+            Point left_bottom = new Point(loc.X, diagonal.Y);//左下顶点
+            drawLine_Bresenham(loc, right_top, color);
+            drawLine_Bresenham(right_top, diagonal, color);
+            drawLine_Bresenham(diagonal, left_bottom, color);
+            drawLine_Bresenham(loc, left_bottom, color);
+        }
+
+        /// <summary>
+        /// 绘制矩形
+        /// </summary>
+        /// <param name="loc">左上角坐标</param>
+        /// <param name="diagonal">右下角坐标</param>
+        /// <param name="color">颜色</param>
+        /// <param name="name">矩形名字</param>
+        public void drawRectangle(Point loc, Point diagonal, Color color, string name)
+        {
+            CG_Rectangle newRec = new CG_Rectangle(loc, diagonal);
+            newRec.Name = name;
+            listRectangle.AddLast(newRec);
+            curRectangle = newRec;
+            drawRectangle(loc, diagonal, color);
+            
         }
 
         /// <summary>
@@ -729,6 +820,88 @@ namespace CG_Exp_2D
                 {
                     if (canPaint[i, j] == true) bmp.SetPixel(i, j, tmp.GetPixel(i, j));
                 }
+        }
+
+        /// <summary>
+        /// 使用Liang-Barsky算法裁剪线段，裁剪窗口为矩形
+        /// </summary>
+        /// <param name="line">待裁剪的线段</param>
+        /// <param name="window">裁剪窗口</param>
+        /// <returns>裁剪完后的线段</returns>
+        public CG_Line clipLines_LiangBarsky(CG_Line line, CG_Rectangle window)
+        {
+            /*
+             * 设直线为(x0,y0)->(x1,y1)
+             * 参数化表示为 
+             *      x=x0+u(x1-x0)
+             *      y=y0+u(y1-y0)
+             * 裁剪条件为
+             *      xmin<=x0+u(x1-x0)<=xmax
+             *      ymin<=y0+u(y1-y0)<=ymax
+             * 可统一表示为u*pk<=qk  (k=0,1,2,3
+             * 根据pk和qk可以求得裁剪线段的端点
+             * */
+
+            //直线的参数
+            int x0,y0,x1,y1;
+            x0=line.Param.start.X;
+            y0=line.Param.start.Y;
+            x1=line.Param.end.X;
+            y1=line.Param.end.Y;
+            //裁剪窗口的边界
+            int xmin, xmax, ymin, ymax;
+            xmin = window.Left;
+            xmax = window.Right;
+            ymin = window.Bottom;
+            ymax = window.Top;
+
+            int[] p=new int[4];
+            int[] q=new int[4];
+            p[0] = -1 * (x1 - x0); q[0] = x0 - xmin;//left
+            p[1] = x1 - x0; q[1] = xmax - x0;//right
+            p[2] = -1 * (y1 - y0); q[2] = y0 - ymin;//bottom
+            p[3] = y1 - y0; q[3] = ymax - y0;//top
+
+            double u1 = 0, u2 = 1;//初始裁剪端点为原线段的端点
+            for (int k = 0; k < 4; k++)
+            {
+                if (p[k] == 0 && q[k] < 0) return null;//线段完全在边界外部 
+                double r = Convert.ToDouble(q[k]) / Convert.ToDouble(p[k]);
+                if (p[k] < 0)
+                {
+                    if (r > u1) u1 = r;
+                }
+                else//pk>0
+                {
+                    if (r < u2) u2 = r;
+                }
+            }
+            if (u1 > u2) return null;
+
+            Point q0 = new Point(x0 + Convert.ToInt32(u1 * (x1 - x0)), y0 + Convert.ToInt32(u1 * (y1 - y0)));
+            Point q1 = new Point(x0 + Convert.ToInt32(u2 * (x1 - x0)), y0 + Convert.ToInt32(u2 * (y1 - y0)));
+            CG_Line clippedLine = new CG_Line(q0, q1, line.Param.color);
+            return clippedLine;
+        }
+
+        /// <summary>
+        /// 用当前的矩形作为裁剪窗口裁剪所有的线段
+        /// </summary>
+        public void clipLines_usingCurRectangle()
+        {
+            if (listLine.Count == 0) return;
+            LinkedListNode<CG_Line> cur = listLine.First;
+            CG_Line newLine;
+            while (cur != null)
+            {
+                newLine = clipLines_LiangBarsky(cur.Value, curRectangle);
+                if (newLine != null)
+                {
+                    cur.Value = newLine;
+                    drawLine_Bresenham(newLine.Param.start,newLine.Param.end, Color.Red);
+                }
+                cur = cur.Next;
+            }
         }
     }
 }
