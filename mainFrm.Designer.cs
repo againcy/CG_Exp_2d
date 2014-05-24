@@ -46,6 +46,13 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.button_drawRectangle = new System.Windows.Forms.Button();
             this.button_clipLines = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.textBox_chooseItem = new System.Windows.Forms.TextBox();
+            this.button_output = new System.Windows.Forms.Button();
+            this.button_clipPolygon = new System.Windows.Forms.Button();
+            this.button_findIntersections = new System.Windows.Forms.Button();
+            this.button_checkInPolygon = new System.Windows.Forms.Button();
+            this.button_clearCanvas = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel_workspace
@@ -204,11 +211,84 @@
             this.button_clipLines.UseVisualStyleBackColor = true;
             this.button_clipLines.Click += new System.EventHandler(this.button_clipLines_Click);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(860, 347);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(53, 12);
+            this.label1.TabIndex = 18;
+            this.label1.Text = "选定图元";
+            // 
+            // textBox_chooseItem
+            // 
+            this.textBox_chooseItem.Location = new System.Drawing.Point(834, 367);
+            this.textBox_chooseItem.Name = "textBox_chooseItem";
+            this.textBox_chooseItem.Size = new System.Drawing.Size(120, 21);
+            this.textBox_chooseItem.TabIndex = 19;
+            // 
+            // button_output
+            // 
+            this.button_output.Location = new System.Drawing.Point(618, 546);
+            this.button_output.Name = "button_output";
+            this.button_output.Size = new System.Drawing.Size(100, 30);
+            this.button_output.TabIndex = 20;
+            this.button_output.Text = "导出";
+            this.button_output.UseVisualStyleBackColor = true;
+            this.button_output.Click += new System.EventHandler(this.button_output_Click);
+            // 
+            // button_clipPolygon
+            // 
+            this.button_clipPolygon.Location = new System.Drawing.Point(618, 296);
+            this.button_clipPolygon.Name = "button_clipPolygon";
+            this.button_clipPolygon.Size = new System.Drawing.Size(100, 30);
+            this.button_clipPolygon.TabIndex = 21;
+            this.button_clipPolygon.Text = "裁剪多边形";
+            this.button_clipPolygon.UseVisualStyleBackColor = true;
+            this.button_clipPolygon.Click += new System.EventHandler(this.button_clipPolygon_Click);
+            // 
+            // button_findIntersections
+            // 
+            this.button_findIntersections.Location = new System.Drawing.Point(618, 329);
+            this.button_findIntersections.Name = "button_findIntersections";
+            this.button_findIntersections.Size = new System.Drawing.Size(100, 30);
+            this.button_findIntersections.TabIndex = 22;
+            this.button_findIntersections.Text = "求直线交点";
+            this.button_findIntersections.UseVisualStyleBackColor = true;
+            this.button_findIntersections.Click += new System.EventHandler(this.button_findIntersections_Click);
+            // 
+            // button_checkInPolygon
+            // 
+            this.button_checkInPolygon.Location = new System.Drawing.Point(816, 6);
+            this.button_checkInPolygon.Name = "button_checkInPolygon";
+            this.button_checkInPolygon.Size = new System.Drawing.Size(147, 30);
+            this.button_checkInPolygon.TabIndex = 23;
+            this.button_checkInPolygon.Text = "点是否在当前多边形内";
+            this.button_checkInPolygon.UseVisualStyleBackColor = true;
+            this.button_checkInPolygon.Click += new System.EventHandler(this.button_checkInPolygon_Click);
+            // 
+            // button_clearCanvas
+            // 
+            this.button_clearCanvas.Location = new System.Drawing.Point(620, 510);
+            this.button_clearCanvas.Name = "button_clearCanvas";
+            this.button_clearCanvas.Size = new System.Drawing.Size(100, 30);
+            this.button_clearCanvas.TabIndex = 24;
+            this.button_clearCanvas.Text = "清空画布";
+            this.button_clearCanvas.UseVisualStyleBackColor = true;
+            this.button_clearCanvas.Click += new System.EventHandler(this.button_clearCanvas_Click);
+            // 
             // mainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(966, 615);
+            this.Controls.Add(this.button_clearCanvas);
+            this.Controls.Add(this.button_checkInPolygon);
+            this.Controls.Add(this.button_findIntersections);
+            this.Controls.Add(this.button_clipPolygon);
+            this.Controls.Add(this.button_output);
+            this.Controls.Add(this.textBox_chooseItem);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.button_clipLines);
             this.Controls.Add(this.button_drawRectangle);
             this.Controls.Add(this.label2);
@@ -254,6 +334,13 @@
         private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.Button button_drawRectangle;
         private System.Windows.Forms.Button button_clipLines;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox_chooseItem;
+        private System.Windows.Forms.Button button_output;
+        private System.Windows.Forms.Button button_clipPolygon;
+        private System.Windows.Forms.Button button_findIntersections;
+        private System.Windows.Forms.Button button_checkInPolygon;
+        private System.Windows.Forms.Button button_clearCanvas;
     }
 }
 

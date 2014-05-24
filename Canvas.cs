@@ -253,6 +253,10 @@ namespace CG_Exp_2D
             for (int i = 0; i < bmp.Width; i++)
                 for (int j = 0; j < bmp.Height; j++)
                     bmp.SetPixel(i, j, bgColor);
+            if (listCircle!=null) listCircle.Clear();
+            if (listLine != null) listLine.Clear();
+            if (listPolygon != null) listPolygon.Clear();
+            if (listRectangle != null) listRectangle.Clear();
         }
 
         /// <summary>
@@ -293,21 +297,57 @@ namespace CG_Exp_2D
         }
 
         /// <summary>
-        /// 根据名称改变当前curXXX所指向的图元
+        /// 根据名称改变当前curXXX所指向的图元，返回值表示所选中的图元类型
         /// </summary>
-        /// <param name="name"></param>
-        public void changeCurPrimitive(string name)
+        /// <param name="name">名称</param>
+        /// <returns>line直线 circle圆 polygon多边形 rectangle矩形</returns>
+        public string changeCurPrimitive(string name)
         {
             //todo
+            LinkedListNode<CG_Line> curL = listLine.First;
+            while (curL != null)
+            {
+                if (curL.Value.Name == name)
+                {
+                    curLine = curL.Value;
+                    return "line";
+                }
+                curL = curL.Next;
+            }
+
+            LinkedListNode<CG_Circle> curC = listCircle.First;
+            while (curC != null)
+            {
+                if (curC.Value.Name == name)
+                {
+                    curCircle = curC.Value;
+                    return "circle";
+                }
+                curC = curC.Next;
+            }
+
+            LinkedListNode<CG_Polygon> curPol = listPolygon.First;
+            while (curPol != null)
+            {
+                if (curPol.Value.Name == name)
+                {
+                    curPolygon = curPol.Value;
+                    return "polygon";
+                }
+                curPol = curPol.Next;
+            }
+
             LinkedListNode<CG_Rectangle> curRec = listRectangle.First;
             while (curRec != null)
             {
                 if (curRec.Value.Name == name)
                 {
                     curRectangle = curRec.Value;
-                    return;
+                    return "rectangle";
                 }
+                curRec = curRec.Next;
             }
+            return null;
         }
 
         /// <summary>
@@ -398,7 +438,7 @@ namespace CG_Exp_2D
             foreach (Point v in vertice)
             {
                 count++;
-                if (count == 1) newPolygon = new CG_Polygon(v);
+                if (count == 1) newPolygon = new CG_Polygon(v, color);
                 else
                 {
                     newPolygon.addVertex(v);
@@ -431,7 +471,7 @@ namespace CG_Exp_2D
         /// <param name="color">当前边的颜色</param>
         public void drawPolygon(Point vertex, Color color)
         {
-            if (curPolygon == null) curPolygon = new CG_Polygon(vertex);
+            if (curPolygon == null) curPolygon = new CG_Polygon(vertex, color);
             else
             {
                 if (curPolygon.nVertex > 0)
@@ -454,6 +494,26 @@ namespace CG_Exp_2D
         }
 
         /// <summary>
+        /// 对于已有的多边形，直接将其按顶点顺序绘制出来
+        /// </summary>
+        /// <param name="polygon">多边形</param>
+        public void drawPolygon(CG_Polygon polygon)
+        {
+            if (polygon.nVertex < 3) return;
+            Point first, prep, cur;
+            first = polygon.getVertex();
+            prep = first;
+            cur = polygon.getVertex();
+            while (cur != first)
+            {
+                drawLine_Bresenham(prep, cur, polygon.Color);
+                prep = cur;
+                cur = polygon.getVertex();
+            }
+            drawLine_Bresenham(prep, cur, polygon.Color);
+        }
+
+        /// <summary>
         /// 画多边形的最后一条边
         /// </summary>
         /// <param name="color">当前边的颜色</param>
@@ -470,8 +530,10 @@ namespace CG_Exp_2D
                 }
                 else
                 {
+                    
                     Point v1 = curPolygon.getLast();
                     Point v2 = curPolygon.getFirst();
+                    curPolygon.changeVertexOrder();
                     drawLine_Bresenham(v1, v2, color);
                     curPolygon.Name = name;
                     listPolygon.AddLast(curPolygon);
@@ -885,6 +947,53 @@ namespace CG_Exp_2D
         }
 
         /// <summary>
+        /// 寻找所有的直线的交点
+        /// </summary>
+        public void findIntersections()
+        {
+            if (listLine.Count<2) 
+            {
+                MessageBox.Show("当前直线图元少于2个！");
+                return;
+            }
+            LinkedListNode<CG_Line> prev, cur;
+            prev = listLine.First;
+            cur = prev.Next;
+            string output = "";
+            CG_Polygon p = new CG_Polygon(new Point(0, 0), Color.Black);
+            do
+            {
+                Point p0, p1, q0, q1;
+                p0=prev.Value.Param.start;
+                p1=prev.Value.Param.end;
+                q0=cur.Value.Param.start;
+                q1=cur.Value.Param.end;
+                if (p.isCross(p0, p1, q0, q1) == true)
+                {
+                    Point tmp = p.crossPoint(p0, p1, q0, q1);
+                    output += "(" + tmp.X.ToString() + ", " + tmp.Y.ToString() + "); ";
+                }
+                prev = cur;
+                cur = cur.Next;
+                if (cur == null) cur = listLine.First;
+            } while (prev != listLine.First);
+            MessageBox.Show("交点有：" + output);
+        }
+
+        /// <summary>
+        /// 判断点是否在当前多边形内
+        /// </summary>
+        /// <param name="p">坐标</param>
+        public void checkInPolygon(Point p)
+        {
+            if (curPolygon == null) return;
+            string str="";
+            if (curPolygon.isInPolygon(p) == true) str = "在内部";
+            else str = "不在内部";
+            MessageBox.Show(str);
+        }
+
+        /// <summary>
         /// 用当前的矩形作为裁剪窗口裁剪所有的线段
         /// </summary>
         public void clipLines_usingCurRectangle()
@@ -902,6 +1011,205 @@ namespace CG_Exp_2D
                 }
                 cur = cur.Next;
             }
+        }
+
+        /// <summary>
+        /// 双边裁剪
+        /// </summary>
+        /// <param name="target">目标多边形</param>
+        /// <param name="window">裁剪窗口多边形</param>
+        /// <returns></returns>
+        public CG_Polygon[] clipPolygon_WeilerAtherton(CG_Polygon target, CG_Polygon window)
+        {
+            Point t_first, t_prev, t_cur;//target
+            Point w_first, w_prev, w_cur;//window
+            Point tmp;
+
+            if (target.clipVertex != null) target.clipVertex.Clear();
+            if (window.clipVertex != null) window.clipVertex.Clear();
+            if (target.intersections != null) target.intersections.Clear();
+            if (window.intersections != null) window.intersections.Clear();
+            target.intersections = new LinkedList<CG_Polygon.tagIntersections>();
+            window.intersections = new LinkedList<CG_Polygon.tagIntersections>();
+            //求出两多边形的交点列表
+            t_first = target.getVertex();
+            t_prev = t_first;
+            t_cur = target.getVertex();
+            do
+            {
+                bool isIn=window.isInPolygon(t_prev);//边的始点是否在窗口内部
+                w_first = window.getVertex();
+                w_prev = w_first;
+                w_cur = window.getVertex();
+                do
+                {
+                    tmp = target.crossPoint(t_prev, t_cur, w_prev, w_cur);
+                    if (tmp.IsEmpty == false)
+                    {
+                        
+                        target.addIntersections(tmp, t_prev, t_cur, isIn);
+                        window.addIntersections(tmp, w_prev, w_cur, isIn);
+                    }
+                    w_prev = w_cur;
+                    w_cur = window.getVertex();
+                } while (w_prev != w_first);
+                t_prev = t_cur;
+                t_cur = target.getVertex();
+            } while (t_prev != t_first);
+
+            //将顶点加入到多边形的顶点列表中
+            target.setClipVertex();
+            window.setClipVertex();
+            LinkedListNode<CG_Polygon.tagClipVertex> tclip_cur=target.clipVertex.First;
+            LinkedListNode<CG_Polygon.tagClipVertex> wclip_cur;
+            while (tclip_cur != null)
+            {
+                if (tclip_cur.Value.isIntersection == true)
+                {
+                    wclip_cur = window.clipVertex.First;
+                    while (wclip_cur != null)
+                    {
+                        if (wclip_cur.Value.isIntersection == true && wclip_cur.Value.v == tclip_cur.Value.v)
+                        {
+                            CG_Polygon.tagClipVertex tmp3 = tclip_cur.Value;
+                            LinkedListNode<CG_Polygon.tagClipVertex> prev = wclip_cur.Previous;
+                            window.clipVertex.Remove(wclip_cur);
+                            if (prev != null)
+                            {
+                                window.clipVertex.AddAfter(prev, tmp3);
+                            }
+                            else
+                            {
+                                window.clipVertex.AddFirst(tmp3);
+                            }
+                            break;
+                        }
+                        wclip_cur = wclip_cur.Next;
+                    }
+                }
+                tclip_cur = tclip_cur.Next;
+            }
+
+            LinkedList<CG_Polygon> resultPolygon = new LinkedList<CG_Polygon>();
+            //开始裁剪
+            LinkedListNode<CG_Polygon.tagClipVertex> inter=target.findUnTracked();
+            //寻找一个没有被跟踪过的交点
+            while (inter != null)
+            {
+                CG_Polygon newPolygon = new CG_Polygon(Color.Red);
+                
+                LinkedListNode<CG_Polygon.tagClipVertex> newNode=inter;
+                bool polygonFinish = false;//若已搜索到一个封闭多边形则为true
+                bool trackingTarget = true;//记录当前沿哪一个窗口边界进行跟踪
+                while (polygonFinish == false)
+                {
+                    
+                    target.setTracked(newNode.Value.v);
+                    window.setTracked(newNode.Value.v);
+                    if (newPolygon.addVertex(newNode.Value.v) == false)
+                    {
+                        polygonFinish = true;
+                        break;
+                    }
+                    if (newNode.Value.isIn == true)
+                    {
+                        //交点为入点，则沿目标多边形边界跟踪
+                        newNode = target.findByPoint(newNode.Value.v);
+                        trackingTarget = true;
+                    }
+                    else
+                    {
+                        //交点为出点，沿窗口多边形边界跟踪
+                        newNode = window.findByPoint(newNode.Value.v);
+                        trackingTarget = false;
+                    }
+                    newNode = newNode.Next;
+                    if (newNode == null)
+                    {
+                        if (trackingTarget == true) newNode = target.clipVertex.First;
+                        else newNode = window.clipVertex.First;
+                    }
+                    
+                    while (newNode!=null && newNode.Value.isIntersection == false)
+                    {
+                        if (newPolygon.addVertex(newNode.Value.v) == true)
+                        {
+                            newNode = newNode.Next;
+                            if (newNode == null)
+                            {
+                                if (trackingTarget == true) newNode = target.clipVertex.First;
+                                else newNode = window.clipVertex.First;
+                            }
+                        }
+                        else
+                        {
+                            polygonFinish = true;
+                            break;
+                        }
+                    }
+                    //if (newNode == null) polygonFinish = true;
+                }
+                resultPolygon.AddLast(newPolygon);
+                inter = target.findUnTracked();
+            }
+
+            if (resultPolygon.Count == 0)
+            {
+                CG_Polygon[] ret;
+                //无交点，结果多边形列表为空
+                if (window.isInPolygon(target.getFirst()) == true)
+                {
+                    //目标多边形完全在裁剪窗口内部
+                    ret = new CG_Polygon[1];
+                    ret[0] = target;
+                    return ret;
+                }
+                if (target.isInPolygon(window.getFirst()) == true)
+                {
+                    //裁剪窗口完全在目标多边形内部
+                    ret = new CG_Polygon[1];
+                    ret[0] = window;
+                    return ret;
+                }
+                return null;
+            }
+            else
+            {
+                CG_Polygon[] ret = new CG_Polygon[resultPolygon.Count];
+                int n = resultPolygon.Count;
+                for (int i = 0; i < n; i++)
+                {
+                    ret[i] = resultPolygon.First();
+                    resultPolygon.RemoveFirst();
+                }
+                return ret;
+            }
+        }
+
+        /// <summary>
+        /// 用当前多边形作为裁剪窗口裁剪所有的多边形
+        /// </summary>
+        public void clipPolygons_usingCurPolygon()
+        {
+            if (listPolygon.Count == 0) return;
+            LinkedListNode<CG_Polygon> cur = listPolygon.First;
+            while (cur != null)
+            {
+                if (cur.Value.Name != curPolygon.Name)
+                {
+                    CG_Polygon[] group = clipPolygon_WeilerAtherton(cur.Value, curPolygon);
+                    if (group != null)
+                    {
+                        foreach (CG_Polygon tmp in group)
+                        {
+                            tmp.Color = Color.Red;
+                            drawPolygon(tmp);
+                        }
+                    }
+                }
+                cur = cur.Next;
+            }
+
         }
     }
 }

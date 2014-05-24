@@ -166,9 +166,13 @@ namespace CG_Exp_2D
         //绘制工作区
         private void panel_workspace_Paint(object sender, PaintEventArgs e)
         {
-            //Pen pen = new Pen(Color.Black);
+            
             Graphics g = e.Graphics;
+            
             g.DrawImageUnscaled(curCanvas.Bmp, 0, 0);
+            /*Pen pen = new Pen(Color.Black);
+            g.DrawLine(pen, new Point(zero.X, 0), new Point(zero.X, 600));
+            g.DrawLine(pen, new Point(0, zero.Y), new Point(600, zero.Y));*/
             /*
             for (int i = 0; i < layers.Count; i++)
             {
@@ -237,8 +241,14 @@ namespace CG_Exp_2D
         //设置输入的坐标为当前坐标
         private void button_setCoor_Click(object sender, EventArgs e)
         {
-            curClick.X = int.Parse(textBox_X.Text);
-            curClick.Y = int.Parse(textBox_Y.Text);
+            try
+            {
+                curClick.X = int.Parse(textBox_X.Text);
+                curClick.Y = int.Parse(textBox_Y.Text);
+            }
+            catch (Exception)
+            {
+            }
             textBox_curCoords.Text = curClick.X.ToString() + ", " + curClick.Y.ToString();
             checkIfDraw();
         }
@@ -254,13 +264,72 @@ namespace CG_Exp_2D
         private void button_clipLines_Click(object sender, EventArgs e)
         {
             curCanvas.clipLines_usingCurRectangle();
+            panel_workspace.Refresh();
         }
 
         //图元列表中的选项改变时
         private void listBox_graphics_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string name = listBox_graphics.SelectedItem.ToString();
-            curCanvas.changeCurPrimitive(name);
+
+            try
+            {
+                string name = listBox_graphics.SelectedItem.ToString();
+
+                if (curCanvas.changeCurPrimitive(name) != null)
+                {
+                    textBox_chooseItem.Text = name;
+                }
+                else
+                {
+                    MessageBox.Show("找不到该图元！");
+                }
+            }
+            catch (Exception)
+            {
+                
+                
+            }
+        }
+
+        private void button_output_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.Filter = "BMP图片(*.bmp)|*.bmp";
+            dlg.FilterIndex = 1;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                string filePath = dlg.FileName;
+                curCanvas.Bmp.Save(filePath);
+                
+            }
+        }
+
+        private void button_clipPolygon_Click(object sender, EventArgs e)
+        {
+            if (curCanvas.CurPolygon == null)
+            {
+                MessageBox.Show("请选择作为裁剪窗口的多边形！");
+                return;
+            }
+            curCanvas.clipPolygons_usingCurPolygon();
+            panel_workspace.Refresh();
+        }
+
+        private void button_findIntersections_Click(object sender, EventArgs e)
+        {
+            curCanvas.findIntersections();
+
+        }
+
+        private void button_checkInPolygon_Click(object sender, EventArgs e)
+        {
+            curCanvas.checkInPolygon(curClick);
+        }
+
+        private void button_clearCanvas_Click(object sender, EventArgs e)
+        {
+            curCanvas.clearCanvas();
+            listBox_graphics.Items.Clear();
             panel_workspace.Refresh();
         }
     }

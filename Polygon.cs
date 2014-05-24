@@ -12,10 +12,35 @@ namespace CG_Exp_2D
     /// </summary>
     class CG_Polygon
     {
+        public struct tagClipVertex
+        {
+            public Point v;
+            public bool isIntersection;//是否是交点
+            public bool isTracked;//是否被跟踪过
+            public bool isIn;//是否是入点
+        }
+        public struct tagIntersections
+        {
+            public Point p0, p1;//交点所在的边的，始点和终点
+            public Point v;//端点
+            public bool isIn;//始点是否在窗口内部
+        }
+        
         /// <summary>
         /// 多边形的顶点链表
         /// </summary>
         private LinkedList<Point> vertex;
+
+        /// <summary>
+        /// 包含判断是否是交点信息的顶点列表，用于裁剪
+        /// </summary>
+        public LinkedList<tagClipVertex> clipVertex;
+
+        /// <summary>
+        /// 交点列表
+        /// </summary>
+        public LinkedList<tagIntersections> intersections;
+        
         private LinkedListNode<Point> curV;//用于返回vertex链表的函数
 
         /// <summary>
@@ -33,13 +58,50 @@ namespace CG_Exp_2D
             }
         }
         private string name;
-        
 
-        public CG_Polygon(Point first)
+        /// <summary>
+        /// 颜色
+        /// </summary>
+        public Color Color
+        {
+            set
+            {
+                color = value;
+            }
+            get
+            {
+                return color;
+            }
+        }
+        private Color color;
+
+        public CG_Polygon(Color c)
+        {
+            color = c;
+            vertex = new LinkedList<Point>();
+            intersections = new LinkedList<tagIntersections>();
+        }
+
+        public CG_Polygon(Point first, Color c)
         {
             vertex = new LinkedList<Point>();
+            intersections = new LinkedList<tagIntersections>();
             vertex.AddFirst(first);
-            curV = vertex.First;
+            
+            color = c;
+        }
+
+        /// <summary>
+        /// 计算两点间的距离
+        /// </summary>
+        /// <param name="p0">一个点</param>
+        /// <param name="p1">另一个点</param>
+        /// <returns>距离</returns>
+        private double distance(Point p0, Point p1)
+        {
+            double a = Math.Pow(p1.X - p0.X, 2);
+            double b = Math.Pow(p1.Y - p0.Y, 2);
+            return Math.Sqrt(a + b);
         }
 
         /// <summary>
@@ -98,7 +160,7 @@ namespace CG_Exp_2D
         /// <param name="q1">第二条线段端点</param>
         /// <param name="q2">第二条线段端点</param>
         /// <returns>true:有交点; false:无交点</returns>
-        private bool isCross(Point p1, Point p2, Point q1, Point q2)
+        public bool isCross(Point p1, Point p2, Point q1, Point q2)
         {
             int vp1, vp2, vp3, vp4;
             vp1 = vectorProduct(p1, q1, p1, p2);
@@ -117,47 +179,55 @@ namespace CG_Exp_2D
                 else if (vp4 == 0 && onSegment(q1, q2, p2)) return true;
             }
             return false;
-                /*
-                double delta = vectorProduct(p2.X - p1.X, q1.X - q2.X, p2.Y - p1.Y, q1.Y - q2.Y);
-                if (delta ==0 )  // delta==0，表示两线段重合或平行  
-                {
-                    return false;
-                }
-                double namenda = vectorProduct(q1.X - p1.X, q1.X - q2.X, q1.Y - p1.Y, q1.Y - q2.Y) / delta;
-                if (namenda > 1 || namenda < 0)
-                {
-                    return false;
-                }
-                double miu = vectorProduct(p2.X - p1.X, q1.X - p1.X, p2.Y - p1.Y, q1.Y - p1.Y) / delta;
-                if (miu > 1 || miu < 0)
-                {
-                    return false;
-                }
-                return true;
-                */
-                /*
-                d1 ====>   (P2 - P1) x (Q1 - P1) (叉积)
-
-　　　　        d2 ====>   (P2 - P1) x (Q2 - P1) (叉积)
-
-　　　　        d3 ====>   (Q2 - Q1) x (P1 - Q1) (叉积)
-
-　　　　        d4 ====>   (Q2 - Q1) x (P2 - P1) (叉积)*/
-                /*
-                int d1, d2, d3, d4;
-                d1 = determinant(p2.X - p1.X, p2.Y - p1.Y, q1.X - p1.X, q1.Y - p1.Y);
-                d2 = determinant(p2.X - p1.X, p2.Y - p1.Y, q2.X - p1.X, q2.Y - p1.Y);
-                d3 = determinant(q2.X - q1.X, q2.Y - q1.Y, p1.X - q1.X, p1.Y - q1.Y);
-                d4 = determinant(q2.X - q1.X, q2.Y - q1.Y, p2.X - p1.X, p2.Y - p1.Y);
-                if (d1 * d2 < 0 && d3 * d4 < 0) return true;
-                else return false;
-                          */
-                
-            
         }
 
         /// <summary>
-        /// 判断由点v1和v2相连的线段是否和多边形的边相交
+        /// 求两线段交点（需先判断两线段是否有交点
+        /// </summary>
+        /// <param name="p1">第一条线段端点</param>
+        /// <param name="p2">第一条线段端点</param>
+        /// <param name="q1">第二条线段端点</param>
+        /// <param name="q2">第二条线段端点</param>
+        /// <returns>交点坐标，若无交点则为空</returns>
+        public Point crossPoint(Point p1, Point p2, Point q1, Point q2)
+        {
+            //参考http://www.cnblogs.com/devymex/archive/2010/08/19/1803885.html
+            Point ret = new Point();
+            if (isCross(p1, p2, q1, q2) == false) return ret;
+            else
+            {
+                
+                if (p1 == q1 || p1 == q2 || p2 == q1 || p2 == q2)
+                {
+                    //有端点重合
+                    if (p2 == q1 || p2 == q2) ret = p2;
+                    else ret=p1;
+                }
+                else
+                {
+                    int x1,x2,x3,x4,y1,y2,y3,y4;//p1(x1,y1) p2(x2,y2) q1(x3,y3) q2(x4,y4)
+                    x1=p1.X;y1=p1.Y;
+                    x2=p2.X;y2=p2.Y;
+                    x3=q1.X;y3=q1.Y;
+                    x4=q2.X;y4=q2.Y;
+                    int b1 = (y2 - y1) * x1 + (x1 - x2) * y1;
+                    int b2 = (y4 - y3) * x3 + (x3 - x4) * y3;
+                    int D,D1,D2;//行列式
+                    D = (x2 - x1) * (y4 - y3) - (x4 - x3) * (y2 - y1);
+                    D1 = b2 * (x2 - x1) - b1 * (x4 - x3);
+                    D2 = b2 * (y2 - y1) - b1 * (y4 - y3);
+                    double x0, y0;//交点坐标
+                    x0 = Convert.ToDouble(D1) / Convert.ToDouble(D);
+                    y0 = Convert.ToDouble(D2) / Convert.ToDouble(D);
+                    ret.X = Convert.ToInt32(x0);
+                    ret.Y = Convert.ToInt32(y0);
+                }
+                return ret;
+            }
+        }
+
+        /// <summary>
+        /// 判断由点v1和v2相连的线段是否和多边形的边相交(未完成)
         /// </summary>
         /// <param name="v1">线段端点</param>
         /// <param name="v2">线段端点</param>
@@ -176,8 +246,40 @@ namespace CG_Exp_2D
         /// <returns>true:点在多边形内; false:点不在多边形内</returns>
         public bool isInPolygon(Point v)
         {
-            //todo
-            return true;
+            //参考http://blog.csdn.net/hjh2005/article/details/9246967
+            if (vertex.Count < 3) return true;
+            LinkedListNode<Point> prep = vertex.First;
+            LinkedListNode<Point> cur = prep.Next;
+            Point p1, p2;
+            //记录扫描线上，v左边和右边与多边形边的交点个数
+            int left = 0;
+            int right = 0;
+            //通过扫描线与多边形的交点判断点是否在内部
+            while (cur != null)
+            {
+                p1 = prep.Value;
+                p2 = cur.Value;
+                if ((p1.Y < v.Y && p2.Y >= v.Y) || (p2.Y < v.Y && p1.Y >= v.Y))
+                {
+                    //判断通过v的扫描线与多边形的交点(当前程序中画布的宽是-300->300)
+                    Point tmp=crossPoint(p1,p2,new Point(-300,v.Y),new Point(300,v.Y));
+                    if (tmp.X < v.X) left++;
+                    else right++;
+                }
+                prep = cur;
+                cur = cur.Next;
+            }
+            cur = vertex.First;
+            p1 = prep.Value;
+            p2 = cur.Value;
+            if ((p1.Y < v.Y && p2.Y >= v.Y) || (p2.Y < v.Y && p1.Y >= v.Y))
+            {
+                Point tmp = crossPoint(p1, p2, new Point(-300, v.Y), new Point(300, v.Y));
+                if (tmp.X < v.X) left++;
+                else right++;
+            }
+            if (left % 2 == 1 && right % 2 == 1) return true;
+            else return false;
         }
 
         /// <summary>
@@ -342,6 +444,195 @@ namespace CG_Exp_2D
         }
 
         /// <summary>
+        /// 将交点加入交点列表中
+        /// </summary>
+        /// <param name="inter">交点</param>
+        /// <param name="v0">交点所在边的始点</param>
+        /// <param name="v1">交点所在边的终点</param>
+        /// <param name="isIn">边的始点是否在窗口内部</param>
+        public void addIntersections(Point inter, Point v0, Point v1, bool isIn)
+        {
+            tagIntersections  tmp;
+            tmp.v=inter;
+            tmp.p0=v0;
+            tmp.p1=v1;
+            tmp.isIn = isIn;
+            intersections.AddLast(tmp);
+        }
+
+        /// <summary>
+        /// 创建含交点的顶点列表，交点信息已存储在intersections中
+        /// </summary>
+        public void setClipVertex() 
+        {
+            LinkedListNode<Point> prep = vertex.First;
+            LinkedListNode<Point> cur = prep.Next;
+            tagClipVertex newVertex;
+            LinkedList<tagIntersections> inter = new LinkedList<tagIntersections>();
+            clipVertex = new LinkedList<tagClipVertex>();
+            do
+            {
+                //边的端点加入列表
+                newVertex.v=prep.Value;
+                newVertex.isIntersection=false;
+                newVertex.isTracked = false;
+                newVertex.isIn = false;
+                clipVertex.AddLast(newVertex);
+                //存储边在(prep,cur)上的交点的列表
+                inter.Clear();
+                //找到所有在边(prep, cur)上的交点
+                LinkedListNode<tagIntersections> curI=intersections.First;
+                while (curI != null)
+                {
+                    if ((curI.Value.p0 == prep.Value && curI.Value.p1 == cur.Value) || (curI.Value.p0 == cur.Value && curI.Value.p1 == prep.Value))
+                    {
+                        inter.AddLast(curI.Value);
+                    }
+                    curI = curI.Next;
+                }
+
+                bool isIn=false;//记录交点所在边的始点是否在窗口内部
+                if (inter.Count > 0) isIn = inter.First.Value.isIn;
+                while (inter.Count > 0)
+                {
+                    newVertex.isIntersection = true;
+                    LinkedListNode<tagIntersections> iter = inter.First;
+                    LinkedListNode<tagIntersections> mini=null;
+                    double min=distance(prep.Value,cur.Value);
+                    while (iter != null)
+                    {
+                        double tmp=distance(prep.Value,iter.Value.v);
+                        if (tmp < min)
+                        {
+                            min = tmp;
+                            newVertex.v = iter.Value.v;
+                            //newVertex.isIn = iter.Value.isIn;
+                            mini = iter;
+                        }
+                        iter = iter.Next;
+                    }
+                    
+                    newVertex.isIn = !isIn;//交点所在边的始点在窗口外部，则交点为入点；否则为出点
+                    isIn = !isIn;//所有的交点按顺序一定是一入一出
+
+                    clipVertex.AddLast(newVertex);
+                    inter.Remove(mini);
+                }
+                /*
+                //边的端点加入列表
+                newVertex.v = cur.Value;
+                newVertex.isIntersection = false;
+                clipVertex.AddLast(newVertex);*/
+                //遍历
+                prep=cur;
+                cur=cur.Next;
+                if (cur==null) cur=vertex.First;
+            }while(prep!=vertex.First);
+            
+        }
+
+        /// <summary>
+        /// 通过坐标找到列表中的节点
+        /// </summary>
+        /// <param name="p">坐标</param>
+        /// <returns>链表节点</returns>
+        public LinkedListNode<tagClipVertex> findByPoint(Point p)
+        {
+            LinkedListNode<tagClipVertex> cur = clipVertex.First;
+            while (cur != null)
+            {
+                if (cur.Value.v == p) return cur;
+                cur = cur.Next;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 寻找下一个没有被跟踪过的交点
+        /// </summary>
+        /// <returns>该交点在clipVertex中的节点信息</returns>
+        public LinkedListNode<tagClipVertex> findUnTracked()
+        {
+            LinkedListNode<tagClipVertex> cur = clipVertex.First;
+            while (cur != null)
+            {
+                if (cur.Value.isIntersection == true && cur.Value.isTracked == false) break;
+                cur = cur.Next;
+            }
+            return cur;
+        }
+
+        /// <summary>
+        /// 将p设置为已跟踪过
+        /// </summary>
+        /// <param name="p">要设置的点的坐标</param>
+        public void setTracked(Point p)
+        {
+            LinkedListNode<tagClipVertex> cur = clipVertex.First;
+            while (cur != null)
+            {
+                if (cur.Value.v == p) 
+                {
+                    tagClipVertex newNode=cur.Value;
+                    newNode.isTracked = true;
+                    LinkedListNode<tagClipVertex> prev = cur.Previous;
+                    clipVertex.Remove(cur);
+                    if (prev == null) clipVertex.AddFirst(newNode);
+                    else clipVertex.AddAfter(prev, newNode);
+                    break;
+                }
+                cur = cur.Next;
+            }
+        }
+
+        /// <summary>
+        /// 将顶点顺序改为顺时针存储
+        /// </summary>
+        public void changeVertexOrder()
+        {
+            if (vertex.Count < 3) return;
+            Point v0 = vertex.First.Value;
+            Point v1 = vertex.First.Next.Value ;
+            Point v2 = vertex.Last.Value;
+            Point[] vct = new Point[2];
+            vct[0] = new Point(v1.X - v0.X, v1.Y - v0.Y);
+            vct[1] = new Point(v2.X - v0.X, v2.Y - v0.Y);
+            double[] angle=new double[2];
+            //求出 v0->v1和v0->v2关于y轴正半轴的夹角
+            for (int i = 0; i < 2; i++)
+            {
+                if (vct[i].X != 0)
+                {
+                    angle[i] = Math.Atan(Math.Abs(Convert.ToDouble(vct[i].Y)) / Math.Abs(Convert.ToDouble(vct[i].X)));
+                    if (vct[i].X > 0 && vct[i].Y >= 0) angle[i] = 90 - angle[i];
+                    else if (vct[i].X > 0 && vct[i].Y < 0) angle[i] = 90 + angle[i];
+                    else if (vct[i].X < 0 && vct[i].Y < 0) angle[i] = 270 - angle[i];
+                    else if (vct[i].X < 0 && vct[i].Y >= 0) angle[i] = 270 + angle[i];
+                }
+                else
+                {
+                    if (vct[i].Y > 0) angle[i] = 0;
+                    else angle[i] = 180;
+                }
+            }
+            if (angle[0] < angle[1]) return;
+            else
+            {
+                //将顶点列表反向
+                LinkedList<Point> newList = new LinkedList<Point>();
+                newList.AddFirst(vertex.First.Value);
+                LinkedListNode<Point> cur=vertex.Last;
+                while (cur != vertex.First)
+                {
+                    newList.AddLast(cur.Value);
+                    cur = cur.Previous;
+                }
+                vertex.Clear();
+                vertex = newList;
+            }
+        }
+
+        /// <summary>
         /// 多边形的顶点个数
         /// </summary>
         public int nVertex
@@ -362,7 +653,10 @@ namespace CG_Exp_2D
         /// <returns>按顺序获取的顶点坐标</returns>
         public Point getVertex()
         {
-            if (curV == null) return vertex.First();
+            if (curV == null)
+            {
+                curV = vertex.First;
+            }
             Point ret = curV.Value;
             curV = curV.Next;
             return ret;
