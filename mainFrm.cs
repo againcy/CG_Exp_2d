@@ -317,8 +317,17 @@ namespace CG_Exp_2D
 
         private void button_findIntersections_Click(object sender, EventArgs e)
         {
-            curCanvas.findIntersections();
-
+            string tmp = curCanvas.findIntersections();
+            if (tmp == null) return;
+            else
+            {
+                if (tmp == "") MessageBox.Show("无交点！");
+                else
+                {
+                    panel_workspace.Refresh();
+                    MessageBox.Show(tmp);
+                }
+            }
         }
 
         private void button_checkInPolygon_Click(object sender, EventArgs e)

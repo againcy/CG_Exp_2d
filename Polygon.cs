@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
+using CG_Tools;
 
 namespace CG_Exp_2D
 {
@@ -92,141 +93,6 @@ namespace CG_Exp_2D
         }
 
         /// <summary>
-        /// 计算两点间的距离
-        /// </summary>
-        /// <param name="p0">一个点</param>
-        /// <param name="p1">另一个点</param>
-        /// <returns>距离</returns>
-        private double distance(Point p0, Point p1)
-        {
-            double a = Math.Pow(p1.X - p0.X, 2);
-            double b = Math.Pow(p1.Y - p0.Y, 2);
-            return Math.Sqrt(a + b);
-        }
-
-        /// <summary>
-        /// 求叉积向量p0->p1和q0->q1, 只返回-1或1表示结果的符号
-        /// </summary>
-        /// <returns>叉积</returns>
-        private int vectorProduct(Point p0, Point p1, Point q0, Point q1)  
-        {
-            int a=(p1.X-p0.X)*(q1.Y-q0.Y);
-            int b=(p1.Y-p0.Y)*(q1.X-q0.X);
-            if (a - b > 0) return 1;
-            else return -1;
-            
-        }
-
-        /// <summary>
-        /// 判断pk是否在(pi,pj)上
-        /// </summary>
-        /// <param name="pi"></param>
-        /// <param name="pj"></param>
-        /// <param name="pk"></param>
-        /// <returns>true:在线段上; false:不在线段上</returns>
-        private bool onSegment(Point pi, Point pj, Point pk)
-        {      
-            int minx, miny, maxx, maxy;      
-            if (pi.X > pj.X)
-            {          
-                minx = pj.X;         
-                maxx = pi.X;      
-            }   
-            else
-            {         
-                minx = pi.X;       
-                maxx = pj.X;     
-            }       
-            if (pi.Y > pj.Y)
-            {
-                miny = pj.Y;          
-                maxy = pi.Y;   
-            }  
-            else
-            {           
-                miny = pi.Y;        
-                maxy = pj.Y;      
-            }      
-            if (minx <= pk.X && pk.X <= maxx && miny <= pk.Y && pk.Y <= maxy)    
-                return true;     
-            else  return false; 
-            
-        }
-        /// <summary>
-        /// 判断两条线段是否相交
-        /// </summary>
-        /// <param name="p1">第一条线段端点</param>
-        /// <param name="p2">第一条线段端点</param>
-        /// <param name="q1">第二条线段端点</param>
-        /// <param name="q2">第二条线段端点</param>
-        /// <returns>true:有交点; false:无交点</returns>
-        public bool isCross(Point p1, Point p2, Point q1, Point q2)
-        {
-            int vp1, vp2, vp3, vp4;
-            vp1 = vectorProduct(p1, q1, p1, p2);
-            vp2 = vectorProduct(p1, q2, p1, p2);
-            vp3 = vectorProduct(q1, p1, q1, q2);
-            vp4 = vectorProduct(q1, p2, q1, q2);
-            if (vp1 * vp2 < 0 && vp3 * vp4 < 0)
-            {
-                return true;
-            }
-            else
-            {
-                if (vp1 == 0 && onSegment(p1, p2, q1)) return true;
-                else if (vp2 == 0 && onSegment(p1, p2, q2)) return true;
-                else if (vp3 == 0 && onSegment(q1, q2, p1)) return true;
-                else if (vp4 == 0 && onSegment(q1, q2, p2)) return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 求两线段交点（需先判断两线段是否有交点
-        /// </summary>
-        /// <param name="p1">第一条线段端点</param>
-        /// <param name="p2">第一条线段端点</param>
-        /// <param name="q1">第二条线段端点</param>
-        /// <param name="q2">第二条线段端点</param>
-        /// <returns>交点坐标，若无交点则为空</returns>
-        public Point crossPoint(Point p1, Point p2, Point q1, Point q2)
-        {
-            //参考http://www.cnblogs.com/devymex/archive/2010/08/19/1803885.html
-            Point ret = new Point();
-            if (isCross(p1, p2, q1, q2) == false) return ret;
-            else
-            {
-                
-                if (p1 == q1 || p1 == q2 || p2 == q1 || p2 == q2)
-                {
-                    //有端点重合
-                    if (p2 == q1 || p2 == q2) ret = p2;
-                    else ret=p1;
-                }
-                else
-                {
-                    int x1,x2,x3,x4,y1,y2,y3,y4;//p1(x1,y1) p2(x2,y2) q1(x3,y3) q2(x4,y4)
-                    x1=p1.X;y1=p1.Y;
-                    x2=p2.X;y2=p2.Y;
-                    x3=q1.X;y3=q1.Y;
-                    x4=q2.X;y4=q2.Y;
-                    int b1 = (y2 - y1) * x1 + (x1 - x2) * y1;
-                    int b2 = (y4 - y3) * x3 + (x3 - x4) * y3;
-                    int D,D1,D2;//行列式
-                    D = (x2 - x1) * (y4 - y3) - (x4 - x3) * (y2 - y1);
-                    D1 = b2 * (x2 - x1) - b1 * (x4 - x3);
-                    D2 = b2 * (y2 - y1) - b1 * (y4 - y3);
-                    double x0, y0;//交点坐标
-                    x0 = Convert.ToDouble(D1) / Convert.ToDouble(D);
-                    y0 = Convert.ToDouble(D2) / Convert.ToDouble(D);
-                    ret.X = Convert.ToInt32(x0);
-                    ret.Y = Convert.ToInt32(y0);
-                }
-                return ret;
-            }
-        }
-
-        /// <summary>
         /// 判断由点v1和v2相连的线段是否和多边形的边相交(未完成)
         /// </summary>
         /// <param name="v1">线段端点</param>
@@ -261,8 +127,9 @@ namespace CG_Exp_2D
                 p2 = cur.Value;
                 if ((p1.Y < v.Y && p2.Y >= v.Y) || (p2.Y < v.Y && p1.Y >= v.Y))
                 {
+                    
                     //判断通过v的扫描线与多边形的交点(当前程序中画布的宽是-300->300)
-                    Point tmp=crossPoint(p1,p2,new Point(-300,v.Y),new Point(300,v.Y));
+                    Point tmp = Tool.crossPoint(p1, p2, new Point(-300, v.Y), new Point(300, v.Y));
                     if (tmp.X < v.X) left++;
                     else right++;
                 }
@@ -274,7 +141,7 @@ namespace CG_Exp_2D
             p2 = cur.Value;
             if ((p1.Y < v.Y && p2.Y >= v.Y) || (p2.Y < v.Y && p1.Y >= v.Y))
             {
-                Point tmp = crossPoint(p1, p2, new Point(-300, v.Y), new Point(300, v.Y));
+                Point tmp = Tool.crossPoint(p1, p2, new Point(-300, v.Y), new Point(300, v.Y));
                 if (tmp.X < v.X) left++;
                 else right++;
             }
@@ -302,18 +169,15 @@ namespace CG_Exp_2D
                 {
                     if (v10.Value == v01.Value)
                     {
-                        //共顶点的两条边
-                        if (vectorProduct(v11.Value, v10.Value, v11.Value, v00.Value) == 0)
-                        {
-                            //两条边共线，对于除公共顶点外的两个顶点，判断其是否在另一条线段上
-                            if (onSegment(v00.Value, v01.Value, v11.Value) == true) return true;
-                            if (onSegment(v10.Value, v11.Value, v00.Value) == true) return true;
-                        }
+                        //共顶点的两条边，判断另一个顶点是否在另一条线段上
+                        if (Tool.isOnSegment(v00.Value, v01.Value, v11.Value) == true ||
+                            Tool.isOnSegment(v10.Value, v11.Value, v00.Value) == true)
+                            return true;
                     }
                     else
                     {
                         //两线段无公共顶点，若有交点，则多边形自相交
-                        if (isCross(v00.Value, v01.Value, v10.Value, v11.Value) == true) return true;
+                        if (Tool.isCross(v00.Value, v01.Value, v10.Value, v11.Value) == true) return true;
                     }
                     v10 = v10.Next;
                     v11 = v11.Next;
@@ -325,28 +189,23 @@ namespace CG_Exp_2D
                 {
                     if (v10.Value == v01.Value)
                     {
-                        //共顶点的两条边
-                        if (vectorProduct(v11.Value, v10.Value, v11.Value, v00.Value) == 0)
-                        {
-                            //两条边共线，对于除公共顶点外的两个顶点，判断其是否在另一条线段上
-                            if (onSegment(v00.Value, v01.Value, v11.Value) == true) return true;
-                            if (onSegment(v10.Value, v11.Value, v00.Value) == true) return true;
-                        }
+
+                        //共顶点的两条边，判断另一个顶点是否在另一条线段上
+                        if (Tool.isOnSegment(v00.Value, v01.Value, v11.Value) == true ||
+                            Tool.isOnSegment(v10.Value, v11.Value, v00.Value) == true) 
+                            return true;
                     }
                     if (v11.Value == v00.Value)
                     {
-                        //共顶点的两条边
-                        if (vectorProduct(v10.Value, v11.Value, v10.Value, v01.Value) == 0)
-                        {
-                            //两条边共线，对于除公共顶点外的两个顶点，判断其是否在另一条线段上
-                            if (onSegment(v00.Value, v01.Value, v10.Value) == true) return true;
-                            if (onSegment(v10.Value, v11.Value, v01.Value) == true) return true;
-                        }
+                        //共顶点的两条边，判断另一个顶点是否在另一条线段上
+                        if (Tool.isOnSegment(v00.Value, v01.Value, v10.Value) == true ||
+                            Tool.isOnSegment(v10.Value, v11.Value, v01.Value) == true)
+                            return true;
                     }
                 }
                 else
                 {
-                    if (isCross(v00.Value, v01.Value, v10.Value, v11.Value) == true) return true;
+                    if (Tool.isCross(v00.Value, v01.Value, v10.Value, v11.Value) == true) return true;
                 }
                 //(v00,v01)遍历下一条边
                 v00 = v00.Next;
@@ -363,7 +222,7 @@ namespace CG_Exp_2D
                             v4.X.ToString() + " " + v4.Y.ToString() + "\n");
         }
         /// <summary>
-        /// 
+        /// 新加入顶点后判断多边形是否自相交
         /// </summary>
         /// <param name="vNew"></param>
         /// <returns></returns>
@@ -378,18 +237,16 @@ namespace CG_Exp_2D
             {
                 if (v11 == vLast)
                 {
-                    //共顶点的两条边
-                    if (vectorProduct(v10.Value, vNew, v10.Value, v11.Value) == 0)
-                    {
-                        //两条边共线，对于除公共顶点外的两个顶点，判断其是否在另一条线段上
-                        if (onSegment(v10.Value, v11.Value, vNew) == true) { /*debug(v10.Value,v11.Value,vNew,vLast.Value);*/ return true; }
-                        if (onSegment(vNew, vLast.Value, v10.Value) == true) { /*debug(v10.Value, v11.Value, vNew, vLast.Value);*/ return true; }
-                    }
+                    //共顶点的两条边，判断另一个顶点是否在另一条线段上
+                    if (Tool.isOnSegment(v10.Value, v11.Value, vNew) == true ||
+                        Tool.isOnSegment(vNew, vLast.Value, v10.Value) == true)
+                        return true;
+
                 }
                 else
                 {
                     //判断新的顶点和最后一个顶点的连线是否和原有的边有交点
-                    if (isCross(vNew, vLast.Value, v10.Value, v11.Value) == true) { /*debug(v10.Value, v11.Value, vNew, vLast.Value);*/ return true; }
+                    if (Tool.isCross(vNew, vLast.Value, v10.Value, v11.Value) == true) return true; 
                 }
                 v10 = v10.Next;
                 v11 = v11.Next;
@@ -430,15 +287,9 @@ namespace CG_Exp_2D
             }
             else
             {
-
-                if (isSelfIntersect(newV) == false)
-                {
-                    vertex.AddAfter(node, newV);
-                    //若新加入的顶点构成的多边形是自相交的，则返回 失败
-                    //vertex.Remove(newNode);
-                    //return false;
-                }
-                else return false;
+                //若新加入的顶点使多边形存在自相交情况，则返回失败，否则加入新点
+                if (isSelfIntersect(newV) == true) return false;
+                else vertex.AddAfter(node, newV);
             }
             return true;
         }
@@ -472,7 +323,7 @@ namespace CG_Exp_2D
             clipVertex = new LinkedList<tagClipVertex>();
             do
             {
-                //边的端点加入列表
+                //边的始点加入列表
                 newVertex.v=prep.Value;
                 newVertex.isIntersection=false;
                 newVertex.isTracked = false;
@@ -498,10 +349,10 @@ namespace CG_Exp_2D
                     newVertex.isIntersection = true;
                     LinkedListNode<tagIntersections> iter = inter.First;
                     LinkedListNode<tagIntersections> mini=null;
-                    double min=distance(prep.Value,cur.Value);
+                    double min=Tool.distanceBetween(prep.Value,cur.Value);
                     while (iter != null)
                     {
-                        double tmp=distance(prep.Value,iter.Value.v);
+                        double tmp=Tool.distanceBetween(prep.Value,iter.Value.v);
                         if (tmp < min)
                         {
                             min = tmp;
@@ -518,11 +369,6 @@ namespace CG_Exp_2D
                     clipVertex.AddLast(newVertex);
                     inter.Remove(mini);
                 }
-                /*
-                //边的端点加入列表
-                newVertex.v = cur.Value;
-                newVertex.isIntersection = false;
-                clipVertex.AddLast(newVertex);*/
                 //遍历
                 prep=cur;
                 cur=cur.Next;

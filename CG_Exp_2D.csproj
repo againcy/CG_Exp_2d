@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Canvas.cs" />
+    <Compile Include="CG_Tools.cs" />
     <Compile Include="Curve.cs" />
     <Compile Include="mainFrm.cs">
       <SubType>Form</SubType>

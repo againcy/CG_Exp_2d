@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using CG_Tools;
 
 namespace CG_Exp_2D
 {
@@ -949,35 +950,37 @@ namespace CG_Exp_2D
         /// <summary>
         /// 寻找所有的直线的交点
         /// </summary>
-        public void findIntersections()
+        public string findIntersections()
         {
             if (listLine.Count<2) 
             {
                 MessageBox.Show("当前直线图元少于2个！");
-                return;
+                return null;
             }
-            LinkedListNode<CG_Line> prev, cur;
-            prev = listLine.First;
-            cur = prev.Next;
+            LinkedListNode<CG_Line> head, tail;
+            head = listLine.First;
             string output = "";
-            CG_Polygon p = new CG_Polygon(new Point(0, 0), Color.Black);
-            do
+            while (head!=null)
             {
                 Point p0, p1, q0, q1;
-                p0=prev.Value.Param.start;
-                p1=prev.Value.Param.end;
-                q0=cur.Value.Param.start;
-                q1=cur.Value.Param.end;
-                if (p.isCross(p0, p1, q0, q1) == true)
+                tail = head.Next;
+                while (tail != null)
                 {
-                    Point tmp = p.crossPoint(p0, p1, q0, q1);
-                    output += "(" + tmp.X.ToString() + ", " + tmp.Y.ToString() + "); ";
+                    p0 = head.Value.Param.start;
+                    p1 = head.Value.Param.end;
+                    q0 = tail.Value.Param.start;
+                    q1 = tail.Value.Param.end;
+                    if (Tool.isCross(p0, p1, q0, q1) == true)
+                    {
+                        Point tmp = Tool.crossPoint(p0, p1, q0, q1);
+                        output += "(" + tmp.X.ToString() + ", " + tmp.Y.ToString() + "); ";
+                        drawCircle_Bresenham(tmp, 2, Color.Red);
+                    }
+                    tail = tail.Next;
                 }
-                prev = cur;
-                cur = cur.Next;
-                if (cur == null) cur = listLine.First;
-            } while (prev != listLine.First);
-            MessageBox.Show("交点有：" + output);
+                head = head.Next;
+            }
+            return output;
         }
 
         /// <summary>
@@ -1025,28 +1028,29 @@ namespace CG_Exp_2D
             Point w_first, w_prev, w_cur;//window
             Point tmp;
 
+            //将两多边形裁剪相关的成员链表清空防止之前的裁剪影响本次
             if (target.clipVertex != null) target.clipVertex.Clear();
             if (window.clipVertex != null) window.clipVertex.Clear();
             if (target.intersections != null) target.intersections.Clear();
             if (window.intersections != null) window.intersections.Clear();
             target.intersections = new LinkedList<CG_Polygon.tagIntersections>();
             window.intersections = new LinkedList<CG_Polygon.tagIntersections>();
+
             //求出两多边形的交点列表
             t_first = target.getVertex();
             t_prev = t_first;
             t_cur = target.getVertex();
             do
             {
-                bool isIn=window.isInPolygon(t_prev);//边的始点是否在窗口内部
+                bool isIn=window.isInPolygon(t_prev);//目标多边形边的始点是否在窗口内部
                 w_first = window.getVertex();
                 w_prev = w_first;
                 w_cur = window.getVertex();
                 do
                 {
-                    tmp = target.crossPoint(t_prev, t_cur, w_prev, w_cur);
-                    if (tmp.IsEmpty == false)
+                    if (Tool.isCross(t_prev, t_cur, w_prev, w_cur) == true)
                     {
-                        
+                        tmp = Tool.crossPoint(t_prev, t_cur, w_prev, w_cur);
                         target.addIntersections(tmp, t_prev, t_cur, isIn);
                         window.addIntersections(tmp, w_prev, w_cur, isIn);
                     }
@@ -1090,7 +1094,7 @@ namespace CG_Exp_2D
                 tclip_cur = tclip_cur.Next;
             }
 
-            LinkedList<CG_Polygon> resultPolygon = new LinkedList<CG_Polygon>();
+            LinkedList<CG_Polygon> resultPolygon = new LinkedList<CG_Polygon>();//存放结果多边形的多边形列表
             //开始裁剪
             LinkedListNode<CG_Polygon.tagClipVertex> inter=target.findUnTracked();
             //寻找一个没有被跟踪过的交点
@@ -1147,12 +1151,13 @@ namespace CG_Exp_2D
                             break;
                         }
                     }
-                    //if (newNode == null) polygonFinish = true;
+                    
                 }
                 resultPolygon.AddLast(newPolygon);
                 inter = target.findUnTracked();
             }
 
+            //返回结果多边形列表
             if (resultPolygon.Count == 0)
             {
                 CG_Polygon[] ret;
