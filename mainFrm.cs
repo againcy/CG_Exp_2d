@@ -100,12 +100,20 @@ namespace CG_Exp_2D
                 try
                 {
                     int R = int.Parse(textBox_circleRadius.Text);
-                    name = "圆" + (curCanvas.CountCircle+1).ToString();
-                    curCanvas.drawCircle_Bresenham(curClick, R, curColor, name);
-                    listBox_graphics.Items.Add(name);
-                    switchOff();
-                    panel_workspace.Refresh();
-                    return;
+                    if (R == 0)
+                    {
+                        MessageBox.Show("请输入正确的半径数值（一个正整数）！");
+                        return;
+                    }
+                    else
+                    {
+                        name = "圆" + (curCanvas.CountCircle + 1).ToString();
+                        curCanvas.drawCircle_Bresenham(curClick, R, curColor, name);
+                        listBox_graphics.Items.Add(name);
+                        switchOff();
+                        panel_workspace.Refresh();
+                        return;
+                    }
                 }
                 catch
                 {

@@ -9,6 +9,7 @@ namespace CG_Exp_2D
     
     abstract class Curve<T>
     {
+        /*
         /// <summary>
         /// 绘制曲线时，当前点的坐标
         /// </summary>
@@ -16,11 +17,13 @@ namespace CG_Exp_2D
         private T decision_Pk;//当前的决策参数Pk
         public struct tagParam { };//决定曲线形状的参数列表
         private tagParam param;
-
-        public abstract Point[] pointBySymmetry();//根据对称性求点
-        public abstract void getNextDecision();//获取下一个决策参数
-        public abstract bool getNextPoint();//获取cur点的下一个点的坐标
-        public abstract Point[] curPoint();//获取包含当前的点以及其对称点的点集
+         * */
+        /*
+        public  abstract Point[] pointBySymmetry();//根据对称性求点
+        public  abstract void getNextDecision();//获取下一个决策参数
+        public  abstract bool getNextPoint();//获取cur点的下一个点的坐标*/
+        public abstract Point[] getPoints();//获取曲线上所有点的坐标
+         
         /// <summary>
         /// 交换两个点的坐标
         /// </summary>
@@ -35,6 +38,7 @@ namespace CG_Exp_2D
             
         }
     }
+   
     /// <summary>
     /// 直线类
     /// </summary>
@@ -52,6 +56,12 @@ namespace CG_Exp_2D
         /// 当前点的坐标
         /// </summary>
         private Point cur;
+
+        /// <summary>
+        /// const_1=2delta y;  const_2=2delta y-2delta x
+        /// </summary>
+        private int const_1, const_2;//计算决策变量时的几个参数，详见构造函数中的说明
+
         /// <summary>
         /// 决策参数
         /// </summary>
@@ -77,6 +87,9 @@ namespace CG_Exp_2D
         }
         private string name;
 
+        /// <summary>
+        /// 返回直线的起始点参数
+        /// </summary>
         public tagParam Param
         {
             get
@@ -89,10 +102,11 @@ namespace CG_Exp_2D
         /// </summary>
         private tagParam param;
         private tagParam originalParam;
+
         /// <summary>
-        /// const_1=2delta y;  const_2=2delta y-2delta x
+        /// 存储直线上所有点的点集
         /// </summary>
-        private int const_1, const_2;//计算决策变量时的几个参数，详见构造函数中的说明
+        private Point[] points;
         /// <summary>
         /// 表示若以原直线的起始点为原点，直线位于的区域，将xy坐标系平分成8个区域，用于对称性
         /// </summary>
@@ -105,6 +119,7 @@ namespace CG_Exp_2D
         /// <param name="pEnd">终点坐标</param>
         public CG_Line(Point pStart,Point pEnd, Color c)
         {
+            points = null;
             param = new tagParam();
             param.start = pStart;
             param.end = pEnd;
@@ -120,6 +135,43 @@ namespace CG_Exp_2D
             }
             originalParam = param;
             this.initialize();
+        }
+
+        /// <summary>
+        /// 根据Bresenham画线算法生成直线上的所有点并返回包含这些点的一个 点集
+        /// </summary>
+        /// <returns>点集</returns>
+        public override Point[] getPoints()
+        {
+            if (points != null) return points;
+            else
+            {
+                LinkedList<Point> listPoints = new LinkedList<Point>();
+                //根据bresenham画线算法将点生成出来并保存在listPoints中
+                foreach (Point cur in this.curPoint())
+                {
+                    listPoints.AddLast(cur);
+                }
+                while (this.getNextPoint() == true)
+                {
+                    foreach (Point cur in this.curPoint())
+                    {
+                        listPoints.AddLast(cur);
+                    }
+                }
+                //将listPoints转移到points中
+                points = new Point[listPoints.Count];
+                LinkedListNode<Point> tmp=listPoints.First;
+                int n=0;
+                while (tmp!=null)
+                {
+                    points[n]=tmp.Value;
+                    n++;
+                    tmp=tmp.Next;
+                }
+                listPoints.Clear();
+                return points;
+            }
         }
 
         /// <summary>
@@ -176,7 +228,7 @@ namespace CG_Exp_2D
         /// <summary>
         /// 获取下一个决策参数
         /// </summary>
-        public override void getNextDecision()
+        private void getNextDecision()
         {
             if (decision_Pk < 0)
             {
@@ -192,7 +244,7 @@ namespace CG_Exp_2D
         /// 获得关于当前点的对称点，对于直线来说即是原直线所在区域的对称点
         /// </summary>
         /// <returns></returns>
-        public override Point[] pointBySymmetry()
+        private  Point[] pointBySymmetry()
         {
             Point[] ret = new Point[1] ;
             ret[0] = cur;
@@ -215,7 +267,7 @@ namespace CG_Exp_2D
         /// 获取下一个点的位置
         /// </summary>
         /// <returns>true:成功获取;false:所有点已获取完毕</returns>
-        public override bool getNextPoint()
+        private  bool getNextPoint()
         {
             if (cur.X >= param.end.X) return false;
             Point[] retArr = new Point[1];
@@ -237,7 +289,7 @@ namespace CG_Exp_2D
         /// 获取当前点的坐标，因为是直线，一次返回一个点
         /// </summary>
         /// <returns>当前点</returns>
-        public override Point[] curPoint()
+        private  Point[] curPoint()
         {
             Point[] arr = new Point[1];
             arr = pointBySymmetry();
@@ -254,6 +306,12 @@ namespace CG_Exp_2D
         /// 当前点的坐标
         /// </summary>
         private Point cur;
+
+        /// <summary>
+        /// 存储圆上的所有点
+        /// </summary>
+        private Point[] points;
+
         /// <summary>
         /// 圆的名字
         /// </summary>
@@ -299,6 +357,7 @@ namespace CG_Exp_2D
         /// <param name="R">半径</param>
         public CG_Circle(Point pCenter, int R, Color c)
         {
+            points = null;
             param = new tagParam();
             param.center = pCenter;
             param.radius = R;
@@ -307,11 +366,49 @@ namespace CG_Exp_2D
             cur.Y = R;
             decision_Pk = 5.0 / 4.0 - R;
         }
+
+        /// <summary>
+        /// 获取圆上的所有点
+        /// </summary>
+        /// <returns></returns>
+        public override Point[] getPoints()
+        {
+            if (points != null) return points;
+            else
+            {
+                LinkedList<Point> listPoints = new LinkedList<Point>();
+                //根据bresenham画线算法将点生成出来并保存在listPoints中
+                foreach (Point cur in this.curPoint())
+                {
+                    listPoints.AddLast(cur);
+                }
+                while (this.getNextPoint() == true)
+                {
+                    foreach (Point cur in this.curPoint())
+                    {
+                        listPoints.AddLast(cur);
+                    }
+                }
+                //将listPoints转移到points中
+                points = new Point[listPoints.Count];
+                LinkedListNode<Point> tmp = listPoints.First;
+                int n = 0;
+                while (tmp != null)
+                {
+                    points[n] = tmp.Value;
+                    n++;
+                    tmp = tmp.Next;
+                }
+                listPoints.Clear();
+                return points;
+            }
+        }
+        
         /// <summary>
         /// 根据圆的对称性，返回包含8个点的点集
         /// </summary>
         /// <returns>8个点</returns>
-        public override Point[] pointBySymmetry()//根据对称性求点
+        private  Point[] pointBySymmetry()//根据对称性求点
         {
             /*0-8为8个八分圆上对应的点的坐标
              *      \ 4|0 /
@@ -349,7 +446,7 @@ namespace CG_Exp_2D
             }
             return pArr;
         }
-        public override void getNextDecision()//获取下一个决策参数
+        private  void getNextDecision()//获取下一个决策参数
         {
             if (decision_Pk < 0)
             {
@@ -364,7 +461,7 @@ namespace CG_Exp_2D
         /// 获取下一个点
         /// </summary>
         /// <returns>true:成功获取;false:圆已生成完毕</returns>
-        public override bool getNextPoint()
+        private bool getNextPoint()
         {
             if (cur.X >= cur.Y)
             {
@@ -390,7 +487,7 @@ namespace CG_Exp_2D
         /// 获取包含当前的点以及其对称点的点集，并平移至圆心为center的圆的位置
         /// </summary>
         /// <returns>圆心在center的圆上的点</returns>
-        public override Point[] curPoint()
+        private Point[] curPoint()
         {
             Point[] arr = new Point[8];
             arr = pointBySymmetry();

@@ -360,16 +360,9 @@ namespace CG_Exp_2D
         public void drawLine_Bresenham(Point pStart, Point pEnd, Color color)
         {
             CG_Line newLine = new CG_Line(pStart, pEnd, color);
-            foreach (Point cur in newLine.curPoint())
+            foreach (Point cur in newLine.getPoints())
             {
                 drawOnCanvas(cur, color);
-            }
-            while (newLine.getNextPoint() == true)
-            {
-                foreach (Point cur in newLine.curPoint())
-                {
-                    drawOnCanvas(cur, color);
-                }
             }
         }
 
@@ -398,16 +391,9 @@ namespace CG_Exp_2D
         public void drawCircle_Bresenham(Point center, int R, Color color)
         {
             CG_Circle newCircle = new CG_Circle(center, R, color);
-            foreach (Point cur in newCircle.curPoint())
+            foreach (Point cur in newCircle.getPoints())
             {
                 drawOnCanvas(cur, color);
-            }
-            while (newCircle.getNextPoint() == true)
-            {
-                foreach (Point cur in newCircle.curPoint())
-                {
-                    drawOnCanvas(cur, color);
-                }
             }
         }
 
