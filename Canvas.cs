@@ -65,8 +65,9 @@ namespace CG_Exp_2D
         private Point zero; //坐标系的(0,0)在panel中的位置
 
         private CG_Line curLine;
-
         private CG_Circle curCircle;
+        private CG_Bezier curBezier;
+        private LinkedList<Point> tmpPoints;
 
         public CG_Polygon CurPolygon
         {
@@ -240,6 +241,7 @@ namespace CG_Exp_2D
             hidden = false;
             name = str;
             clearCanvas();
+            tmpPoints = new LinkedList<Point>();
             listLine = new LinkedList<CG_Line>();
             listPolygon = new LinkedList<CG_Polygon>();
             listCircle = new LinkedList<CG_Circle>();
@@ -1199,6 +1201,35 @@ namespace CG_Exp_2D
                     }
                 }
                 cur = cur.Next;
+            }
+
+        }
+
+        /// <summary>
+        /// 添加贝塞尔曲线的控制顶点
+        /// </summary>
+        /// <param name="p">控制顶点坐标</param>
+        public void addControlPoints(Point p)
+        {
+            tmpPoints.AddLast(p);
+        }
+
+        /// <summary>
+        /// 绘制贝塞尔曲线
+        /// </summary>
+        /// <param name="color"></param>
+        public void drawBezier(Color color)
+        {
+            Point[] tmp = tmpPoints.ToArray();
+            curBezier = new CG_Bezier();
+            curBezier.ControlPoints = tmp;
+            curBezier.generateBezier();
+            Point[] points = curBezier.getPoints();
+            Point prev = points[0];
+            for (int i = 1; i < points.Count(); i++)
+            {
+                drawLine_Bresenham(prev, points[i], color);
+                prev = points[i];
             }
 
         }

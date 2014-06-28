@@ -53,6 +53,8 @@
             this.button_findIntersections = new System.Windows.Forms.Button();
             this.button_checkInPolygon = new System.Windows.Forms.Button();
             this.button_clearCanvas = new System.Windows.Forms.Button();
+            this.button_drawControlPolygon = new System.Windows.Forms.Button();
+            this.button_drawBezier = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // panel_workspace
@@ -277,11 +279,33 @@
             this.button_clearCanvas.UseVisualStyleBackColor = true;
             this.button_clearCanvas.Click += new System.EventHandler(this.button_clearCanvas_Click);
             // 
+            // button_drawControlPolygon
+            // 
+            this.button_drawControlPolygon.Location = new System.Drawing.Point(618, 404);
+            this.button_drawControlPolygon.Name = "button_drawControlPolygon";
+            this.button_drawControlPolygon.Size = new System.Drawing.Size(100, 30);
+            this.button_drawControlPolygon.TabIndex = 25;
+            this.button_drawControlPolygon.Text = "绘制控制多边形";
+            this.button_drawControlPolygon.UseVisualStyleBackColor = true;
+            this.button_drawControlPolygon.Click += new System.EventHandler(this.button_drawControlPolygon_Click);
+            // 
+            // button_drawBezier
+            // 
+            this.button_drawBezier.Location = new System.Drawing.Point(734, 404);
+            this.button_drawBezier.Name = "button_drawBezier";
+            this.button_drawBezier.Size = new System.Drawing.Size(100, 30);
+            this.button_drawBezier.TabIndex = 26;
+            this.button_drawBezier.Text = "生成贝塞尔曲线";
+            this.button_drawBezier.UseVisualStyleBackColor = true;
+            this.button_drawBezier.Click += new System.EventHandler(this.button_drawBezier_Click);
+            // 
             // mainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(966, 615);
+            this.Controls.Add(this.button_drawBezier);
+            this.Controls.Add(this.button_drawControlPolygon);
             this.Controls.Add(this.button_clearCanvas);
             this.Controls.Add(this.button_checkInPolygon);
             this.Controls.Add(this.button_findIntersections);
@@ -341,6 +365,8 @@
         private System.Windows.Forms.Button button_findIntersections;
         private System.Windows.Forms.Button button_checkInPolygon;
         private System.Windows.Forms.Button button_clearCanvas;
+        private System.Windows.Forms.Button button_drawControlPolygon;
+        private System.Windows.Forms.Button button_drawBezier;
     }
 }
 

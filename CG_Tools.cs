@@ -175,5 +175,23 @@ namespace CG_Tools
                 return ret;
             }
         }
+
+
+        /// <summary>
+        /// 将线段PQ按u:1-u分割并返回分割点
+        /// </summary>
+        /// <param name="p0">P.X</param>
+        /// <param name="p1">P.Y</param>
+        /// <param name="q0">Q.X</param>
+        /// <param name="q1">Q.Y</param>
+        /// <param name="u">分割比</param>
+        /// <returns>存储分割点坐标X和Y的长度为2的数组</returns>
+        public static double[] divideSegmentByU(double p0, double p1, double q0, double q1, double u)
+        {
+            double[] ret = new double[2];
+            ret[0] = q0 * u + (1 - u) * p0;
+            ret[1] = q1 * u + (1 - u) * p1;
+            return ret;
+        }
     }
 }

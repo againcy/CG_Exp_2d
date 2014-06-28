@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Drawing;
+using CG_Tools;
 
 namespace CG_Exp_2D
 {
     
-    abstract class Curve<T>
+    abstract class Curve
     {
         /*
         /// <summary>
@@ -42,7 +43,7 @@ namespace CG_Exp_2D
     /// <summary>
     /// 直线类
     /// </summary>
-    class CG_Line:Curve<int>
+    class CG_Line:Curve
     {
         /*    k=-1   k=1
          *      \  |  /   
@@ -300,7 +301,7 @@ namespace CG_Exp_2D
     /// <summary>
     /// 圆类
     /// </summary>
-    class CG_Circle : Curve<double>
+    class CG_Circle : Curve
     {
         /// <summary>
         /// 当前点的坐标
@@ -497,6 +498,99 @@ namespace CG_Exp_2D
                 arr[i].Y += param.center.Y;
             }
             return arr;
+        }
+    }
+
+    /// <summary>
+    /// 贝塞尔曲线类
+    /// </summary>
+    class CG_Bezier : Curve
+    {
+        /// <summary>
+        /// 曲线的控制顶点
+        /// </summary>
+        public Point[] ControlPoints
+        {
+            set
+            {
+                controlPoints = value;
+                cntControlPoints = controlPoints.Length;
+            }
+            get
+            {
+                return controlPoints;
+            }
+        }
+        private Point[] controlPoints;
+        private int cntControlPoints;
+
+        public struct tagAccPoint
+        {
+            public double X, Y;
+        }
+        /// <summary>
+        /// 曲线上的点
+        /// </summary>
+        private LinkedList<Point> points;
+
+        /// <summary>
+        /// u从0到1均匀取数的个数
+        /// </summary>
+        private const int rate = 100;
+
+        public CG_Bezier()
+        {
+            points = new LinkedList<Point>();
+            controlPoints = null;
+        }
+
+        /// <summary>
+        /// 生成贝塞尔曲线上的点
+        /// </summary>
+        /// <returns>true:成功生成; false:未设置控制顶点生成失败</returns>
+        public bool generateBezier()
+        {
+            if (controlPoints == null) return false;
+            points.AddFirst(controlPoints[0]);
+            double u;
+            tagAccPoint[] accPoints=new tagAccPoint[cntControlPoints];
+            
+            for (int i = 1; i < rate; i++)
+            {
+                //将控制顶点的坐标放入数组，作为第一次递推的初始参数
+                for (int j = 0; j < cntControlPoints; j++)
+                {
+                    accPoints[j].X = controlPoints[j].X;
+                    accPoints[j].Y = controlPoints[j].Y;
+                }
+                //计算参数u
+                u = Convert.ToDouble(i) / Convert.ToDouble(rate);
+                //生成曲线上的点
+                for (int depth = cntControlPoints; depth > 1; depth--)
+                {
+                    for (int k=0;k<depth-1;k++)
+                    {
+                        double[] tmp = CG_Tools.Tool.divideSegmentByU(accPoints[k].X, accPoints[k].Y, accPoints[k + 1].X, accPoints[k + 1].Y, u);
+                        accPoints[k].X = tmp[0];
+                        accPoints[k].Y = tmp[1];
+                    }
+                }
+                //将点加入曲线的点集
+                points.AddLast(new Point(Convert.ToInt32(accPoints[0].X), Convert.ToInt32(accPoints[0].Y)));
+            }
+            points.AddLast(controlPoints[cntControlPoints-1]);
+            return true;
+        }
+
+        /// <summary>
+        /// 获取曲线上的点
+        /// </summary>
+        /// <returns>返回曲线上的点</returns>
+        public override Point[] getPoints()
+        {
+            Point[] ret = new Point[points.Count];
+            ret = points.ToArray();
+            return ret;
         }
     }
 }

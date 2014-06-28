@@ -15,6 +15,7 @@ namespace CG_Exp_2D
         private bool lineStart, lineEnd;//直线绘画开关
         private bool circleStart;//圆绘画开关
         private bool rectangleStart, rectangleEnd;//矩形绘画开关
+        private bool bezierStart, bezierEnd;//贝塞尔曲线绘制开关
 
         
         private Canvas curCanvas;
@@ -45,6 +46,8 @@ namespace CG_Exp_2D
             circleStart = false;
             rectangleStart = false;
             rectangleEnd = false;
+            bezierStart = false;
+            bezierEnd = false;
         }
 
         /// <summary>
@@ -139,6 +142,27 @@ namespace CG_Exp_2D
                 return;
                
             }//end rectangle
+
+            if (bezierStart == true)
+            {
+                if (bezierEnd == true)
+                {
+                    curCanvas.drawBezier(curColor);
+                    switchOff();
+                    panel_workspace.Refresh();
+                }
+                else
+                {
+                    if (prepClick.X != -10000 && prepClick.Y != -10000)
+                    {
+                        curCanvas.drawLine_Bresenham(prepClick, curClick, curColor);
+                        panel_workspace.Refresh();
+                    }
+                    curCanvas.addControlPoints(curClick);
+                    prepClick = curClick;
+                }
+                return;
+            }//end bezier
         }
 
         private void mainFrm_Load(object sender, EventArgs e)
@@ -152,8 +176,9 @@ namespace CG_Exp_2D
             curClick = e.Location;
             curClick.X = curClick.X - zero.X;
             curClick.Y = zero.Y - curClick.Y;
+            
             textBox_curCoords.Text = curClick.X.ToString() + ", " + curClick.Y.ToString();
-            if (circleStart == true || lineStart == true || polygonStart == true || rectangleStart == true) checkIfDraw();
+            if (circleStart == true || lineStart == true || polygonStart == true || rectangleStart == true || bezierStart == true) checkIfDraw();
         }
 
         //多边形绘制开始
@@ -348,6 +373,19 @@ namespace CG_Exp_2D
             curCanvas.clearCanvas();
             listBox_graphics.Items.Clear();
             panel_workspace.Refresh();
+        }
+
+        private void button_drawControlPolygon_Click(object sender, EventArgs e)
+        {
+            switchOff();
+            prepClick = new Point(-10000,-10000);
+            bezierStart = true;
+        }
+
+        private void button_drawBezier_Click(object sender, EventArgs e)
+        {
+            bezierEnd = true;
+            checkIfDraw();
         }
     }
 }
