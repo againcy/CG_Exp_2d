@@ -15,10 +15,11 @@ namespace CG_Exp_2D
         private bool lineStart, lineEnd;//直线绘画开关
         private bool circleStart;//圆绘画开关
         private bool rectangleStart, rectangleEnd;//矩形绘画开关
-        private bool bezierStart, bezierEnd;//贝塞尔曲线绘制开关
+        private bool bezierStart, bezierPolygonStart, bezierEnd;//贝塞尔曲线绘制开关
 
         
-        private Canvas curCanvas;
+        private Canvas curCanvas;//当前图层
+        private Canvas assistCanvas;//辅助图层，用于绘制贝塞尔曲线的控制多边形
         private Point prepClick, curClick;//上一次鼠标点击的位置； 当前鼠标点击的位置
         private Color curColor;//当前颜色
         private Point zero;//参考坐标系的原点
@@ -29,6 +30,7 @@ namespace CG_Exp_2D
             zero.X = panel_workspace.Width / 2;
             zero.Y = panel_workspace.Height / 2;
             curCanvas = new Canvas(zero.X*2, zero.Y*2 , Color.White, "背景图层");
+            assistCanvas = new Canvas(zero.X * 2, zero.Y * 2, Color.Transparent, "辅助图层");
             curColor = Color.Black;
             panel_curColor.Refresh();
             switchOff();
@@ -48,6 +50,7 @@ namespace CG_Exp_2D
             rectangleEnd = false;
             bezierStart = false;
             bezierEnd = false;
+            bezierPolygonStart = false;
         }
 
         /// <summary>
@@ -147,17 +150,20 @@ namespace CG_Exp_2D
             {
                 if (bezierEnd == true)
                 {
-                    curCanvas.drawBezier(curColor);
+                    name = "贝塞尔曲线" + (curCanvas.CountBezier + 1).ToString();
+                    curCanvas.drawBezier(name, curColor);
+                    listBox_graphics.Items.Add(name);
                     switchOff();
                     panel_workspace.Refresh();
                 }
                 else
                 {
-                    if (prepClick.X != -10000 && prepClick.Y != -10000)
+                    if (bezierPolygonStart == true)
                     {
-                        curCanvas.drawLine_Bresenham(prepClick, curClick, curColor);
+                        assistCanvas.drawLine_Bresenham(prepClick, curClick, Color.FromArgb(64, Color.Blue));
                         panel_workspace.Refresh();
                     }
+                    else bezierPolygonStart = true;
                     curCanvas.addControlPoints(curClick);
                     prepClick = curClick;
                 }
@@ -201,8 +207,9 @@ namespace CG_Exp_2D
         {
             
             Graphics g = e.Graphics;
-            
+
             g.DrawImageUnscaled(curCanvas.Bmp, 0, 0);
+            if (button_switchShowControl.Text == "取消显示控制点") g.DrawImageUnscaled(assistCanvas.Bmp, 0, 0);
             /*Pen pen = new Pen(Color.Black);
             g.DrawLine(pen, new Point(zero.X, 0), new Point(zero.X, 600));
             g.DrawLine(pen, new Point(0, zero.Y), new Point(600, zero.Y));*/
@@ -324,6 +331,7 @@ namespace CG_Exp_2D
             }
         }
 
+        //输出当前图片
         private void button_output_Click(object sender, EventArgs e)
         {
             SaveFileDialog dlg = new SaveFileDialog();
@@ -337,6 +345,7 @@ namespace CG_Exp_2D
             }
         }
 
+        //开始裁剪多边形
         private void button_clipPolygon_Click(object sender, EventArgs e)
         {
             if (curCanvas.CurPolygon == null)
@@ -348,6 +357,7 @@ namespace CG_Exp_2D
             panel_workspace.Refresh();
         }
 
+        //寻找交点
         private void button_findIntersections_Click(object sender, EventArgs e)
         {
             string tmp = curCanvas.findIntersections();
@@ -363,29 +373,60 @@ namespace CG_Exp_2D
             }
         }
 
+        //检查是否在多边形内部
         private void button_checkInPolygon_Click(object sender, EventArgs e)
         {
             curCanvas.checkInPolygon(curClick);
         }
 
+        //清除画布
         private void button_clearCanvas_Click(object sender, EventArgs e)
         {
             curCanvas.clearCanvas();
+            assistCanvas.clearCanvas();
             listBox_graphics.Items.Clear();
             panel_workspace.Refresh();
         }
 
+        //绘制贝赛尔曲线的控制多边形
         private void button_drawControlPolygon_Click(object sender, EventArgs e)
         {
             switchOff();
-            prepClick = new Point(-10000,-10000);
             bezierStart = true;
         }
 
+        //绘制贝赛尔曲线
         private void button_drawBezier_Click(object sender, EventArgs e)
         {
             bezierEnd = true;
             checkIfDraw();
+        }
+
+        //切换显示控制点
+        private void button_switchShowControl_Click(object sender, EventArgs e)
+        {
+            if (button_switchShowControl.Text == "取消显示控制点") button_switchShowControl.Text = "显示控制点";
+            else button_switchShowControl.Text = "取消显示控制点";
+            panel_workspace.Refresh();
+        }
+
+        //填充当前点
+        private void button_fillArea_Click(object sender, EventArgs e)
+        {
+            curCanvas.scanFill(curClick, curColor);
+            panel_workspace.Refresh();
+        }
+
+        //选择颜色
+        private void panel_curColor_Click(object sender, EventArgs e)
+        {
+            ColorDialog dlg = new ColorDialog();
+
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                curColor = dlg.Color;
+                panel_curColor.Refresh();
+            }
         }
     }
 }

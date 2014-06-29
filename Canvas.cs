@@ -67,7 +67,7 @@ namespace CG_Exp_2D
         private CG_Line curLine;
         private CG_Circle curCircle;
         private CG_Bezier curBezier;
-        private LinkedList<Point> tmpPoints;
+        private LinkedList<Point> controlPoints;
 
         public CG_Polygon CurPolygon
         {
@@ -139,10 +139,22 @@ namespace CG_Exp_2D
             }
         }
 
+        /// <summary>
+        /// 当前图层中贝塞尔曲线的数量
+        /// </summary>
+        public int CountBezier
+        {
+            get
+            {
+                return listBezier.Count;
+            }
+        }
+
         private LinkedList<CG_Line> listLine;//直线列表
         private LinkedList<CG_Circle> listCircle;//圆列表
         private LinkedList<CG_Polygon> listPolygon;//多边形列表
         private LinkedList<CG_Rectangle> listRectangle;//矩形列表
+        private LinkedList<CG_Bezier> listBezier;//贝塞尔曲线列表
         private Timer timer;//秒表
 
         /// <summary>
@@ -241,11 +253,14 @@ namespace CG_Exp_2D
             hidden = false;
             name = str;
             clearCanvas();
-            tmpPoints = new LinkedList<Point>();
+            //创建用于存储贝塞尔曲线控制顶点的列表
+            controlPoints = new LinkedList<Point>();
+            //创建各种图元的列表
             listLine = new LinkedList<CG_Line>();
             listPolygon = new LinkedList<CG_Polygon>();
             listCircle = new LinkedList<CG_Circle>();
             listRectangle = new LinkedList<CG_Rectangle>();
+            listBezier = new LinkedList<CG_Bezier>();
         }
 
         /// <summary>
@@ -256,10 +271,12 @@ namespace CG_Exp_2D
             for (int i = 0; i < bmp.Width; i++)
                 for (int j = 0; j < bmp.Height; j++)
                     bmp.SetPixel(i, j, bgColor);
+            if (controlPoints != null) controlPoints.Clear();
             if (listCircle!=null) listCircle.Clear();
             if (listLine != null) listLine.Clear();
             if (listPolygon != null) listPolygon.Clear();
             if (listRectangle != null) listRectangle.Clear();
+            if (listBezier != null) listBezier.Clear();
         }
 
         /// <summary>
@@ -306,7 +323,6 @@ namespace CG_Exp_2D
         /// <returns>line直线 circle圆 polygon多边形 rectangle矩形</returns>
         public string changeCurPrimitive(string name)
         {
-            //todo
             LinkedListNode<CG_Line> curL = listLine.First;
             while (curL != null)
             {
@@ -349,6 +365,17 @@ namespace CG_Exp_2D
                     return "rectangle";
                 }
                 curRec = curRec.Next;
+            }
+
+            LinkedListNode<CG_Bezier> curBez = listBezier.First;
+            while (curBez != null)
+            {
+                if (curBez.Value.Name == name)
+                {
+                    curBezier = curBez.Value;
+                    return "bezier";
+                }
+                curBez = curBez.Next;
             }
             return null;
         }
@@ -1211,19 +1238,21 @@ namespace CG_Exp_2D
         /// <param name="p">控制顶点坐标</param>
         public void addControlPoints(Point p)
         {
-            tmpPoints.AddLast(p);
+            controlPoints.AddLast(p);
         }
 
         /// <summary>
         /// 绘制贝塞尔曲线
         /// </summary>
         /// <param name="color"></param>
-        public void drawBezier(Color color)
+        public void drawBezier(string name, Color color)
         {
-            Point[] tmp = tmpPoints.ToArray();
+            Point[] tmp = controlPoints.ToArray();
             curBezier = new CG_Bezier();
             curBezier.ControlPoints = tmp;
+            curBezier.Name = name;
             curBezier.generateBezier();
+            listBezier.AddLast(curBezier);
             Point[] points = curBezier.getPoints();
             Point prev = points[0];
             for (int i = 1; i < points.Count(); i++)
@@ -1231,7 +1260,7 @@ namespace CG_Exp_2D
                 drawLine_Bresenham(prev, points[i], color);
                 prev = points[i];
             }
-
+            controlPoints.Clear();
         }
     }
 }

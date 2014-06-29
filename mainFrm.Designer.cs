@@ -34,7 +34,6 @@
             this.button_startDrawPolygon = new System.Windows.Forms.Button();
             this.button_endDrawPolygon = new System.Windows.Forms.Button();
             this.button_startDrawLine = new System.Windows.Forms.Button();
-            this.button_chooseColor = new System.Windows.Forms.Button();
             this.panel_curColor = new System.Windows.Forms.Panel();
             this.button_drawCircle = new System.Windows.Forms.Button();
             this.textBox_circleRadius = new System.Windows.Forms.TextBox();
@@ -55,6 +54,9 @@
             this.button_clearCanvas = new System.Windows.Forms.Button();
             this.button_drawControlPolygon = new System.Windows.Forms.Button();
             this.button_drawBezier = new System.Windows.Forms.Button();
+            this.button_switchShowControl = new System.Windows.Forms.Button();
+            this.button_fillArea = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // panel_workspace
@@ -112,22 +114,13 @@
             this.button_startDrawLine.UseVisualStyleBackColor = true;
             this.button_startDrawLine.Click += new System.EventHandler(this.button_startDrawLine_Click);
             // 
-            // button_chooseColor
-            // 
-            this.button_chooseColor.Location = new System.Drawing.Point(620, 582);
-            this.button_chooseColor.Name = "button_chooseColor";
-            this.button_chooseColor.Size = new System.Drawing.Size(100, 30);
-            this.button_chooseColor.TabIndex = 6;
-            this.button_chooseColor.Text = "选择颜色";
-            this.button_chooseColor.UseVisualStyleBackColor = true;
-            this.button_chooseColor.Click += new System.EventHandler(this.button_chooseColor_Click);
-            // 
             // panel_curColor
             // 
-            this.panel_curColor.Location = new System.Drawing.Point(738, 582);
+            this.panel_curColor.Location = new System.Drawing.Point(688, 582);
             this.panel_curColor.Name = "panel_curColor";
             this.panel_curColor.Size = new System.Drawing.Size(30, 30);
             this.panel_curColor.TabIndex = 7;
+            this.panel_curColor.Click += new System.EventHandler(this.panel_curColor_Click);
             this.panel_curColor.Paint += new System.Windows.Forms.PaintEventHandler(this.panel_curColor_Paint);
             // 
             // button_drawCircle
@@ -205,7 +198,7 @@
             // 
             // button_clipLines
             // 
-            this.button_clipLines.Location = new System.Drawing.Point(618, 260);
+            this.button_clipLines.Location = new System.Drawing.Point(618, 329);
             this.button_clipLines.Name = "button_clipLines";
             this.button_clipLines.Size = new System.Drawing.Size(100, 30);
             this.button_clipLines.TabIndex = 17;
@@ -241,7 +234,7 @@
             // 
             // button_clipPolygon
             // 
-            this.button_clipPolygon.Location = new System.Drawing.Point(618, 296);
+            this.button_clipPolygon.Location = new System.Drawing.Point(618, 365);
             this.button_clipPolygon.Name = "button_clipPolygon";
             this.button_clipPolygon.Size = new System.Drawing.Size(100, 30);
             this.button_clipPolygon.TabIndex = 21;
@@ -251,7 +244,7 @@
             // 
             // button_findIntersections
             // 
-            this.button_findIntersections.Location = new System.Drawing.Point(618, 329);
+            this.button_findIntersections.Location = new System.Drawing.Point(618, 401);
             this.button_findIntersections.Name = "button_findIntersections";
             this.button_findIntersections.Size = new System.Drawing.Size(100, 30);
             this.button_findIntersections.TabIndex = 22;
@@ -271,7 +264,7 @@
             // 
             // button_clearCanvas
             // 
-            this.button_clearCanvas.Location = new System.Drawing.Point(620, 510);
+            this.button_clearCanvas.Location = new System.Drawing.Point(618, 510);
             this.button_clearCanvas.Name = "button_clearCanvas";
             this.button_clearCanvas.Size = new System.Drawing.Size(100, 30);
             this.button_clearCanvas.TabIndex = 24;
@@ -281,17 +274,17 @@
             // 
             // button_drawControlPolygon
             // 
-            this.button_drawControlPolygon.Location = new System.Drawing.Point(618, 404);
+            this.button_drawControlPolygon.Location = new System.Drawing.Point(618, 216);
             this.button_drawControlPolygon.Name = "button_drawControlPolygon";
             this.button_drawControlPolygon.Size = new System.Drawing.Size(100, 30);
             this.button_drawControlPolygon.TabIndex = 25;
-            this.button_drawControlPolygon.Text = "绘制控制多边形";
+            this.button_drawControlPolygon.Text = "绘制控制点";
             this.button_drawControlPolygon.UseVisualStyleBackColor = true;
             this.button_drawControlPolygon.Click += new System.EventHandler(this.button_drawControlPolygon_Click);
             // 
             // button_drawBezier
             // 
-            this.button_drawBezier.Location = new System.Drawing.Point(734, 404);
+            this.button_drawBezier.Location = new System.Drawing.Point(724, 216);
             this.button_drawBezier.Name = "button_drawBezier";
             this.button_drawBezier.Size = new System.Drawing.Size(100, 30);
             this.button_drawBezier.TabIndex = 26;
@@ -299,11 +292,43 @@
             this.button_drawBezier.UseVisualStyleBackColor = true;
             this.button_drawBezier.Click += new System.EventHandler(this.button_drawBezier_Click);
             // 
+            // button_switchShowControl
+            // 
+            this.button_switchShowControl.Location = new System.Drawing.Point(724, 252);
+            this.button_switchShowControl.Name = "button_switchShowControl";
+            this.button_switchShowControl.Size = new System.Drawing.Size(100, 30);
+            this.button_switchShowControl.TabIndex = 27;
+            this.button_switchShowControl.Text = "取消显示控制点";
+            this.button_switchShowControl.UseVisualStyleBackColor = true;
+            this.button_switchShowControl.Click += new System.EventHandler(this.button_switchShowControl_Click);
+            // 
+            // button_fillArea
+            // 
+            this.button_fillArea.Location = new System.Drawing.Point(618, 459);
+            this.button_fillArea.Name = "button_fillArea";
+            this.button_fillArea.Size = new System.Drawing.Size(100, 30);
+            this.button_fillArea.TabIndex = 28;
+            this.button_fillArea.Text = "区域填充";
+            this.button_fillArea.UseVisualStyleBackColor = true;
+            this.button_fillArea.Click += new System.EventHandler(this.button_fillArea_Click);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(618, 594);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 12);
+            this.label3.TabIndex = 0;
+            this.label3.Text = "当前颜色";
+            // 
             // mainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(966, 615);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.button_fillArea);
+            this.Controls.Add(this.button_switchShowControl);
             this.Controls.Add(this.button_drawBezier);
             this.Controls.Add(this.button_drawControlPolygon);
             this.Controls.Add(this.button_clearCanvas);
@@ -323,7 +348,6 @@
             this.Controls.Add(this.textBox_circleRadius);
             this.Controls.Add(this.button_drawCircle);
             this.Controls.Add(this.panel_curColor);
-            this.Controls.Add(this.button_chooseColor);
             this.Controls.Add(this.button_startDrawLine);
             this.Controls.Add(this.button_endDrawPolygon);
             this.Controls.Add(this.button_startDrawPolygon);
@@ -346,7 +370,6 @@
         private System.Windows.Forms.Button button_startDrawPolygon;
         private System.Windows.Forms.Button button_endDrawPolygon;
         private System.Windows.Forms.Button button_startDrawLine;
-        private System.Windows.Forms.Button button_chooseColor;
         private System.Windows.Forms.Panel panel_curColor;
         private System.Windows.Forms.Button button_drawCircle;
         private System.Windows.Forms.TextBox textBox_circleRadius;
@@ -367,6 +390,9 @@
         private System.Windows.Forms.Button button_clearCanvas;
         private System.Windows.Forms.Button button_drawControlPolygon;
         private System.Windows.Forms.Button button_drawBezier;
+        private System.Windows.Forms.Button button_switchShowControl;
+        private System.Windows.Forms.Button button_fillArea;
+        private System.Windows.Forms.Label label3;
     }
 }
 

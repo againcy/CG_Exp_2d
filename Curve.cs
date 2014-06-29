@@ -506,6 +506,19 @@ namespace CG_Exp_2D
     /// </summary>
     class CG_Bezier : Curve
     {
+        public string Name
+        {
+            set
+            {
+                name = value;
+            }
+            get
+            {
+                return name;
+            }
+        }
+        private string name;
+
         /// <summary>
         /// 曲线的控制顶点
         /// </summary>
